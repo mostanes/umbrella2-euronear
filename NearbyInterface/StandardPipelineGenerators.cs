@@ -20,7 +20,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 		static FitsImage EnsureImage(string RunDir, string Name, int Number, FitsImage Model, int BitPix, Action<FitsImage> Algorithm, List<ImageProperties> ExtraProperties = null)
 		{
-			string ImagePath = RunDir + Name + Number.ToString() + ".fits";
+			string ImagePath = Path.Combine(RunDir, Name + Number.ToString() + ".fits");
 			if (File.Exists(ImagePath)) return new FitsImage(new FitsFile(ImagePath, false));
 			FitsImage Image = new FitsImage(new FitsFile(ImagePath, true), Model.Width, Model.Height, Model.Transform, BitPix, ExtraProperties);
 			Algorithm(Image);

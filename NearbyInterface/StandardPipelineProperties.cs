@@ -13,22 +13,23 @@ namespace Umbrella2.Pipeline.ViaNearby
 		[Description("Amount to add to the radius to be masked.")]
 		[Category("Star masking")]
 		[DisplayName("Extra mask radius")]
-		internal double ExtraMaskRadius { get; set; } = 2;
+		public double ExtraMaskRadius { get; set; } = 2;
 
 		[Description("Amount by which to scale the star radius on masking.")]
 		[Category("Star masking")]
 		[DisplayName("Mask radius multiplier")]
-		internal double MaskRadiusMultiplier { get; set; } = 1.15;
+		public double MaskRadiusMultiplier { get; set; } = 1.15;
 
 		[Description("Threshold of detection for the blob detection algorithm")]
 		[Category("Blob detection")]
 		[DisplayName("Blob detector threshold")]
-		internal Threshold DotDetectorThreshold { get; set; } = new Threshold() { High = 4, Low = 2 };
+		[TypeConverter(typeof(ExpandableObjectConverter))]
+		public Threshold DotDetectorThreshold { get; set; } = new Threshold() { High = 5, Low = 2.5 };
 
 		[Description("Minimum number of pixels to count a detection")]
 		[Category("Blob detection")]
 		[DisplayName("Blob min pixels")]
-		internal int DotMinPix { get; set; } = 15;
+		public int DotMinPix { get; set; } = 15;
 
 		[Description("Largest deviation from the mean a pixel can have before it is excluded from computing the local mean.")]
 		[Category("Blob detection")]
@@ -38,7 +39,6 @@ namespace Umbrella2.Pipeline.ViaNearby
 		[Description("BITPIX of the generated intermediate files.")]
 		[Category("General pipeline properties")]
 		[DisplayName("Standard BITPIX")]
-		[TypeConverter(typeof(ExpandableObjectConverter))]
 		public int StandardBITPIX { get; set; } = -32;
 
 		[Description("Radius of the Restricted Mean Shot noise removal filter. Value in pixels.")]

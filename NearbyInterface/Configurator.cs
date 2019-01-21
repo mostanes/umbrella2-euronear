@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Text;
 
 namespace Umbrella2.Pipeline.ViaNearby
 {
@@ -38,6 +39,39 @@ namespace Umbrella2.Pipeline.ViaNearby
 			Pipeline.StandardBITPIX = Config.ToInt(nameof(StandardPipeline.StandardBITPIX));
 		}
 
+		public static FrontendConfig ReadConfig(Dictionary<string, string> Config, FrontendConfig FConfig)
+		{
+			FConfig.LoadLast = Config.ToBool(nameof(FrontendConfig.LoadLast));
+			FConfig.RootInputDir = Config[nameof(FrontendConfig.RootInputDir)];
+			FConfig.RootOutputDir = Config[nameof(FrontendConfig.RootOutputDir)];
+			FConfig.WatchDir = Config.ToBool(nameof(FrontendConfig.WatchDir));
+			return FConfig;
+		}
+
+		public static FrontendConfig ReadConfig(Dictionary<string, string> Config) => ReadConfig(Config, new FrontendConfig());
+
+		public static void WriteConfig(Dictionary<string, string> Config, FrontendConfig FConfig)
+		{
+			if (Config.ContainsKey(nameof(FrontendConfig.LoadLast))) Config[nameof(FrontendConfig.LoadLast)] = FConfig.LoadLast.ToString();
+			else Config.Add(nameof(FrontendConfig.LoadLast), FConfig.LoadLast.ToString());
+
+			if (Config.ContainsKey(nameof(FrontendConfig.RootInputDir))) Config[nameof(FrontendConfig.RootInputDir)] = FConfig.RootInputDir;
+			else Config.Add(nameof(FrontendConfig.RootInputDir), FConfig.RootInputDir);
+
+			if (Config.ContainsKey(nameof(FrontendConfig.RootOutputDir))) Config[nameof(FrontendConfig.RootOutputDir)] = FConfig.RootOutputDir;
+			else Config.Add(nameof(FrontendConfig.RootOutputDir), FConfig.RootOutputDir);
+
+			if (Config.ContainsKey(nameof(FrontendConfig.WatchDir))) Config[nameof(FrontendConfig.WatchDir)] = FConfig.WatchDir.ToString();
+			else Config.Add(nameof(FrontendConfig.WatchDir), FConfig.WatchDir.ToString());
+		}
+
+		public static void WriteConfigFile(Dictionary<string, string> Config, string Path)
+		{
+			StringBuilder sbuild = new StringBuilder();
+			foreach (var kvp in Config) sbuild.AppendLine(kvp.Key + "=" + kvp.Value);
+			File.WriteAllText(Path, sbuild.ToString());
+		}
+
 		static int ToInt(this Dictionary<string, string> Dict, string Value) => int.Parse(Dict[Value]);
 		static double ToDouble(this Dictionary<string, string> Dict, string Value) => double.Parse(Dict[Value]);
 		static bool ToBool(this Dictionary<string, string> Dict, string Value) => string.IsNullOrWhiteSpace(Dict[Value]) || Dict[Value].ToLower() == "true";
@@ -49,7 +83,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 		}
 	}
 
-	public struct Threshold
+	public class Threshold
 	{
 		[Description("Lower threshold")]
 		public double Low { get; set; }

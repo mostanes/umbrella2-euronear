@@ -49,14 +49,14 @@ namespace Umbrella2.Pipeline.ViaNearby
 			this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
 			this.menuStrip1.SuspendLayout();
 			this.panel1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize) (this.fileSystemWatcher1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// menuStrip1
 			// 
 			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this.selectFoldersToolStripMenuItem,
-			this.changeSettingsToolStripMenuItem});
+            this.selectFoldersToolStripMenuItem,
+            this.changeSettingsToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
 			this.menuStrip1.Size = new System.Drawing.Size(434, 24);
@@ -66,8 +66,8 @@ namespace Umbrella2.Pipeline.ViaNearby
 			// selectFoldersToolStripMenuItem
 			// 
 			this.selectFoldersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this.inputToolStripMenuItem,
-			this.outputToolStripMenuItem});
+            this.inputToolStripMenuItem,
+            this.outputToolStripMenuItem});
 			this.selectFoldersToolStripMenuItem.Name = "selectFoldersToolStripMenuItem";
 			this.selectFoldersToolStripMenuItem.Size = new System.Drawing.Size(84, 20);
 			this.selectFoldersToolStripMenuItem.Text = "Select folders";
@@ -75,14 +75,16 @@ namespace Umbrella2.Pipeline.ViaNearby
 			// inputToolStripMenuItem
 			// 
 			this.inputToolStripMenuItem.Name = "inputToolStripMenuItem";
-			this.inputToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+			this.inputToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.inputToolStripMenuItem.Text = "Input";
+			this.inputToolStripMenuItem.Click += new System.EventHandler(this.inputToolStripMenuItem_Click);
 			// 
 			// outputToolStripMenuItem
 			// 
 			this.outputToolStripMenuItem.Name = "outputToolStripMenuItem";
-			this.outputToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+			this.outputToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.outputToolStripMenuItem.Text = "Output";
+			this.outputToolStripMenuItem.Click += new System.EventHandler(this.outputToolStripMenuItem_Click);
 			// 
 			// changeSettingsToolStripMenuItem
 			// 
@@ -110,6 +112,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 			// 
 			// button1
 			// 
+			this.button1.Enabled = false;
 			this.button1.Location = new System.Drawing.Point(288, 56);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(134, 23);
@@ -156,6 +159,8 @@ namespace Umbrella2.Pipeline.ViaNearby
 			// 
 			// textBox3
 			// 
+			this.textBox3.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.textBox3.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystemDirectories;
 			this.textBox3.Location = new System.Drawing.Point(86, 58);
 			this.textBox3.Name = "textBox3";
 			this.textBox3.Size = new System.Drawing.Size(196, 20);
@@ -163,10 +168,13 @@ namespace Umbrella2.Pipeline.ViaNearby
 			// 
 			// textBox2
 			// 
+			this.textBox2.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.textBox2.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystemDirectories;
 			this.textBox2.Location = new System.Drawing.Point(86, 31);
 			this.textBox2.Name = "textBox2";
 			this.textBox2.Size = new System.Drawing.Size(196, 20);
 			this.textBox2.TabIndex = 2;
+			this.textBox2.Validating += new System.ComponentModel.CancelEventHandler(this.textBox2_Validating);
 			// 
 			// textBox1
 			// 
@@ -188,18 +196,21 @@ namespace Umbrella2.Pipeline.ViaNearby
 			// richTextBox1
 			// 
 			this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.richTextBox1.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+			this.richTextBox1.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.richTextBox1.HideSelection = false;
 			this.richTextBox1.Location = new System.Drawing.Point(0, 117);
 			this.richTextBox1.Name = "richTextBox1";
 			this.richTextBox1.ReadOnly = true;
 			this.richTextBox1.Size = new System.Drawing.Size(434, 291);
 			this.richTextBox1.TabIndex = 2;
 			this.richTextBox1.Text = "";
+			this.richTextBox1.WordWrap = false;
 			// 
 			// fileSystemWatcher1
 			// 
 			this.fileSystemWatcher1.EnableRaisingEvents = true;
 			this.fileSystemWatcher1.SynchronizingObject = this;
+			this.fileSystemWatcher1.Created += new System.IO.FileSystemEventHandler(this.fileSystemWatcher1_Created);
 			// 
 			// MainForm
 			// 
@@ -215,7 +226,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 			this.menuStrip1.PerformLayout();
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
-			((System.ComponentModel.ISupportInitialize) (this.fileSystemWatcher1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
