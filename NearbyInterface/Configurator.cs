@@ -45,6 +45,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 			FConfig.RootInputDir = Config[nameof(FrontendConfig.RootInputDir)];
 			FConfig.RootOutputDir = Config[nameof(FrontendConfig.RootOutputDir)];
 			FConfig.WatchDir = Config.ToBool(nameof(FrontendConfig.WatchDir));
+			FConfig.Badpixel = Config[nameof(FrontendConfig.Badpixel)];
 			return FConfig;
 		}
 
@@ -63,6 +64,9 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 			if (Config.ContainsKey(nameof(FrontendConfig.WatchDir))) Config[nameof(FrontendConfig.WatchDir)] = FConfig.WatchDir.ToString();
 			else Config.Add(nameof(FrontendConfig.WatchDir), FConfig.WatchDir.ToString());
+
+			if (Config.ContainsKey(nameof(FrontendConfig.Badpixel))) Config[nameof(FrontendConfig.Badpixel)] = FConfig.Badpixel.ToString();
+			else Config.Add(nameof(FrontendConfig.Badpixel), FConfig.Badpixel);
 		}
 
 		public static void WriteConfigFile(Dictionary<string, string> Config, string Path)

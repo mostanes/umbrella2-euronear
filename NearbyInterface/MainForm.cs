@@ -158,9 +158,24 @@ namespace Umbrella2.Pipeline.ViaNearby
 		void RunPipeline()
 		{
 			int i;
+			string[] BadpixSet = Directory.GetFiles(Config.Badpixel);
 			for (i = 0; i < InputFiles.Length; i++)
 			{
-				var Result = Pipeline.AnalyzeCCD(Path.Combine(textBox3.Text, "CCD" + i.ToString()), InputFiles[i].ToArray(), (x) => InvokeLogLine("Pipeline", x, "CCD" + i.ToString()));
+				int CCDNum = i + 1;
+				string CCDStr = "CCD" + CCDNum.ToString();
+				string CBP = BadpixSet.Where((x) => x.Contains(CCDStr)).First();
+				List<Tracklet> Result;
+				try
+				{
+					Result = Pipeline.AnalyzeCCD(Path.Combine(textBox3.Text, CCDStr), InputFiles[i].ToArray(), CBP, (x) => InvokeLogLine("Pipeline", x, CCDStr));
+				}
+				catch (Exception ex)
+				{
+					InvokeLogLine("Pipeline Error", "Unhandled exception of type " + ex.GetType() + " occurred.");
+					InvokeLogLine("Pipeline Error", "Error message: " + ex.Message);
+					InvokeLogLine("Pipeline Error", "Stack trace: " + ex.StackTrace);
+					return;
+				}
 				this.Invoke((ResultShower) ShowResults, Result, i);
 			}
 		}

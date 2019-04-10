@@ -27,7 +27,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 			OutputDetectionMap = 32
 		}
 
-		public List<Tracklet> AnalyzeCCD(string RunDir, string[] FilePaths, Action<string> Logger)
+		public List<Tracklet> AnalyzeCCD(string RunDir, string[] FilePaths, string Badpixel, Action<string> Logger)
 		{
 			/* Deal with incorrect SWARP flux scaling */
 			SWarpScaling.ApplyTransform = CorrectSWARP;
@@ -43,7 +43,15 @@ namespace Umbrella2.Pipeline.ViaNearby
 			double[,] PoissonWeights = PoissonKernel(PoissonRadius);
 			double[] PFW = new double[PoissonWeights.Length];
 			Buffer.BlockCopy(PoissonWeights, 0, PFW, 0, PFW.Length * sizeof(double));
-			Logger("Begging to run the pipeline");
+			Logger("Begining to run the pipeline");
+
+			Logger("Checking badpixel file");
+			bool HasBadpix = Badpixel != null;
+			
+			FitsFile fif_bad = new FitsFile(Badpixel, false);
+			FitsImage BadpixMap = new FitsImage(fif_bad, true);
+			var map = BadpixelFilter.CreateFilter(BadpixMap);
+
 			for (int i = 0; i < ImageCount; i++)
 			{
 				FitsFile File = new FitsFile(FilePaths[i], false);
@@ -55,7 +63,10 @@ namespace Umbrella2.Pipeline.ViaNearby
 				{
 					PFFile = new FitsFile(PoissonFN, true);
 					Poisson = new FitsImage(PFFile, Originals[i].Width, Originals[i].Height, Originals[i].Transform, StandardBITPIX);
-					RestrictedMean.RestrictedMeanFilter.Run(PFW, Originals[i], Poisson, RestrictedMean.Parameters(PoissonRadius));
+					if (!UseCoreFilter)
+						RestrictedMean.RestrictedMeanFilter.Run(PFW, Originals[i], Poisson, RestrictedMean.Parameters(PoissonRadius));
+					else
+						CoreFilter.Filter.Run(new CoreFilter.CoreFilterParameters(PFW, map), Originals[i], Poisson, CoreFilter.Parameters(PoissonRadius));
 					Logger("Generated poisson image " + i);
 				}
 				else { PFFile = new FitsFile(PoissonFN, false); Poisson = new FitsImage(PFFile); }
@@ -126,7 +137,8 @@ namespace Umbrella2.Pipeline.ViaNearby
 				FitsImage DetectionSource = FirstProcess[i];
 				if (Operations.HasFlag(EnabledOperations.Masking))
 				{
-					FitsImage MaskedImage = EnsureImage(RunDir, "Masked_", i, FirstProcess[i], StandardBITPIX, (x) => MaskByMedian.MaskImage(FirstProcess[i], x, MaskProp));
+					FitsImage MaskedImage = EnsureImage(RunDir, "Masked_", i, FirstProcess[i], StandardBITPIX, (x) => MaskByMedian.MaskImage(FirstProcess[i], x, MaskProp),
+						new List<ImageProperties>() { Originals[i].GetProperty<ObservationTime>() });
 					DetectionSource = MaskedImage;
 					MaskedImage.GetProperty<ImageSource>().AddToSet(FirstProcess[i], "Masked Difference");
 					Logger("Masked image " + i);
@@ -135,14 +147,15 @@ namespace Umbrella2.Pipeline.ViaNearby
 				if (Operations.HasFlag(EnabledOperations.SecondMedian))
 				{
 					FitsImage SecondMedImage = EnsureImage(RunDir, "SecMed_", i, DetectionSource, StandardBITPIX,
-						(x) => HardMedians.WeightedMedian.Run(FMW2, DetectionSource, x, HardMedians.WeightedMedianParameters(SecMedRadius)), new List<ImageProperties>() { Originals[i].GetProperty<ObservationTime>() });
+						(x) => HardMedians.WeightedMedian.Run(FMW2, DetectionSource, x, HardMedians.WeightedMedianParameters(SecMedRadius)),
+						new List<ImageProperties>() { Originals[i].GetProperty<ObservationTime>() });
 
 					SecondMedImage.GetProperty<ImageSource>().AddToSet(DetectionSource, "Second Median");
 					Logger("Computed second median for image " + i);
 				}
 
 				ImageStatistics SecMedStat = new ImageStatistics(DetectionSource);
-				foreach (ElevatedRecord er in Originals[i].GetProperty<ObservationTime>().GetRecords()) DetectionSource.Header.Add(er.Name, er);
+				//foreach (ElevatedRecord er in Originals[i].GetProperty<ObservationTime>().GetRecords()) DetectionSource.Header.Add(er.Name, er);
 
 				LocalDetectionList = new List<ImageDetection>();
 

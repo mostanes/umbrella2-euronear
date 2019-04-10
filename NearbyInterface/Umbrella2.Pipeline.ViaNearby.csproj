@@ -38,29 +38,41 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Umbrella2.Algorithms.Detections, Version=2.3.6952.21834, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\Umbrella2.Algorithms.Detections.dll</HintPath>
+    <Reference Include="Umbrella2.Algorithms.Detections, Version=2.3.7034.25651, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\Umbrella2.Algorithms.Detections.dll</HintPath>
     </Reference>
-    <Reference Include="Umbrella2.Algorithms.Images, Version=2.3.6952.21857, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\Umbrella2.Algorithms.Images.dll</HintPath>
+    <Reference Include="Umbrella2.Algorithms.Images, Version=2.3.7034.25651, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\Umbrella2.Algorithms.Images.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaAlgorithmsFramework, Version=2.3.6952.21834, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\UmbrellaAlgorithmsFramework.dll</HintPath>
+    <Reference Include="Umbrella2.Pipeline.EIOAlgorithms, Version=2.2.7034.25651, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\Umbrella2.Pipeline.EIOAlgorithms.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaFitsIo, Version=2.1.6952.21722, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\UmbrellaFitsIo.dll</HintPath>
+    <Reference Include="UmbrellaAlgorithmsFramework, Version=2.3.7034.25628, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\UmbrellaAlgorithmsFramework.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaPipelineExtraIO, Version=2.1.6954.24718, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\UmbrellaPipelineExtraIO.dll</HintPath>
+    <Reference Include="UmbrellaFitsIo, Version=2.1.7034.25622, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\UmbrellaFitsIo.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaPortableNumerical, Version=2.2.6952.21721, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\UmbrellaPortableNumerical.dll</HintPath>
+    <Reference Include="UmbrellaPipelineExtraIO, Version=2.1.7034.25622, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\UmbrellaPipelineExtraIO.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaSharedBase, Version=2.2.6952.21721, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\UmbrellaSharedBase.dll</HintPath>
+    <Reference Include="UmbrellaPortableNumerical, Version=2.2.7034.25628, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\UmbrellaPortableNumerical.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaWinformsVisualizer, Version=2.2.6954.24719, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.3.1\lib\net40\UmbrellaWinformsVisualizer.dll</HintPath>
+    <Reference Include="UmbrellaSharedBase, Version=2.2.7034.25622, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\UmbrellaSharedBase.dll</HintPath>
+    </Reference>
+    <Reference Include="UmbrellaWinformsVisualizer, Version=2.2.7034.25651, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\umbrella2.2.4.0\lib\net40\UmbrellaWinformsVisualizer.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

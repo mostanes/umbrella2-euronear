@@ -11,5 +11,6 @@ namespace Umbrella2.Pipeline.ViaNearby
 		public bool WatchDir;
 		public string RootInputDir;
 		public string RootOutputDir;
+		public string Badpixel;
 	}
 }

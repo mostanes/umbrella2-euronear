@@ -7,7 +7,7 @@ using System.Drawing.Design;
 using System.Windows.Forms.Design;
 
 
-namespace Utils
+namespace General.Utils
 {
 
 	public class FlagCheckedListBox : CheckedListBox

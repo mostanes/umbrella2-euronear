@@ -24,6 +24,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 			textBox2.Text = Config.RootOutputDir;
 			checkBox1.Checked = Config.LoadLast;
 			checkBox2.Checked = Config.WatchDir;
+			textBox3.Text = Config.Badpixel;
 
 			propertyGrid1.SelectedObject = Pipeline;
 		}
@@ -72,5 +73,14 @@ namespace Umbrella2.Pipeline.ViaNearby
 		private void textBox1_Validated(object sender, EventArgs e) => Config.RootInputDir = textBox1.Text;
 
 		private void textBox2_Validated(object sender, EventArgs e) => Config.RootOutputDir = textBox2.Text;
+
+		private void button3_Click(object sender, EventArgs e)
+		{
+			if (!string.IsNullOrWhiteSpace(textBox3.Text)) folderBrowserDialog1.SelectedPath = textBox3.Text;
+			folderBrowserDialog1.ShowDialog();
+			textBox3.Text = folderBrowserDialog1.SelectedPath;
+		}
+
+		private void textBox3_Validated(object sender, EventArgs e) => Config.Badpixel = textBox3.Text;
 	}
 }

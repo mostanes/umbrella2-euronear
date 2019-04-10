@@ -46,6 +46,11 @@ namespace Umbrella2.Pipeline.ViaNearby
 		[DisplayName("Shot noise radius")]
 		public int PoissonRadius { get; set; } = 3;
 
+		[Description("Use CoreFilter instead of Restricted Mean to also remove badpixels.")]
+		[Category("Core")]
+		[DisplayName("Use CoreFilter")]
+		public bool UseCoreFilter { get; set; } = false;
+
 		[Description("Radius of the second median kernel. Value in pixels.")]
 		[Category("Deep smoothing")]
 		[DisplayName("Second median radius")]
@@ -100,7 +105,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 		[Description("Selects which operations are run on the input images.")]
 		[Category("Core")]
 		[DisplayName("Enabled operations")]
-		[Editor(typeof(Utils.FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]
+		[Editor(typeof(General.Utils.FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]
 		public EnabledOperations Operations { get; set; } = (EnabledOperations) 11;
 	}
 }
