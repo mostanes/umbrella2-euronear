@@ -46,12 +46,12 @@ namespace Umbrella2.Pipeline.ViaNearby
 			Buffer.BlockCopy(PoissonWeights, 0, PFW, 0, PFW.Length * sizeof(double));
 			Logger("Begining to run the pipeline");
 
-			Logger("Checking badpixel file");
 			bool HasBadpix = Badpixel != null;
 
 			BitArray[] map = null;
 			if (HasBadpix)
 			{
+				Logger("Checking badpixel file");
 				FitsFile fif_bad = new FitsFile(Badpixel, false);
 				FitsImage BadpixMap = new FitsImage(fif_bad, true);
 				map = BadpixelFilter.CreateFilter(BadpixMap);
@@ -69,10 +69,11 @@ namespace Umbrella2.Pipeline.ViaNearby
 				{
 					PFFile = new FitsFile(PoissonFN, true);
 					Poisson = new FitsImage(PFFile, Originals[i].Width, Originals[i].Height, Originals[i].Transform, StandardBITPIX);
-					if (!UseCoreFilter && map != null)
+					if (!UseCoreFilter)
 						RestrictedMean.RestrictedMeanFilter.Run(PFW, Originals[i], Poisson, RestrictedMean.Parameters(PoissonRadius));
-					else
+					else if (HasBadpix)
 						CoreFilter.Filter.Run(new CoreFilter.CoreFilterParameters(PFW, map), Originals[i], Poisson, CoreFilter.Parameters(PoissonRadius));
+					else throw new ArgumentException("Must specify Badpixel files if trying to run with CoreFilter");
 					Logger("Generated poisson image " + i);
 				}
 				else { PFFile = new FitsFile(PoissonFN, false); Poisson = new FitsImage(PFFile); }
