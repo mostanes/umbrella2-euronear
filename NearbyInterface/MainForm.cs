@@ -158,12 +158,13 @@ namespace Umbrella2.Pipeline.ViaNearby
 		void RunPipeline()
 		{
 			int i;
-			string[] BadpixSet = Directory.GetFiles(Config.Badpixel);
+			string[] BadpixSet = null;
+			if(Pipeline.UseCoreFilter) BadpixSet = Directory.GetFiles(Config.Badpixel);
 			for (i = 0; i < InputFiles.Length; i++)
 			{
 				int CCDNum = i + 1;
 				string CCDStr = "CCD" + CCDNum.ToString();
-				string CBP = BadpixSet.Where((x) => x.Contains(CCDStr)).First();
+				string CBP = BadpixSet == null ? null : BadpixSet.Where((x) => x.Contains(CCDStr)).First();
 				List<Tracklet> Result;
 				try
 				{

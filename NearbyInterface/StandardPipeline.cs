@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,10 +48,15 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 			Logger("Checking badpixel file");
 			bool HasBadpix = Badpixel != null;
-			
-			FitsFile fif_bad = new FitsFile(Badpixel, false);
-			FitsImage BadpixMap = new FitsImage(fif_bad, true);
-			var map = BadpixelFilter.CreateFilter(BadpixMap);
+
+			BitArray[] map = null;
+			if (HasBadpix)
+			{
+				FitsFile fif_bad = new FitsFile(Badpixel, false);
+				FitsImage BadpixMap = new FitsImage(fif_bad, true);
+				map = BadpixelFilter.CreateFilter(BadpixMap);
+			}
+
 
 			for (int i = 0; i < ImageCount; i++)
 			{
@@ -63,7 +69,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 				{
 					PFFile = new FitsFile(PoissonFN, true);
 					Poisson = new FitsImage(PFFile, Originals[i].Width, Originals[i].Height, Originals[i].Transform, StandardBITPIX);
-					if (!UseCoreFilter)
+					if (!UseCoreFilter && map != null)
 						RestrictedMean.RestrictedMeanFilter.Run(PFW, Originals[i], Poisson, RestrictedMean.Parameters(PoissonRadius));
 					else
 						CoreFilter.Filter.Run(new CoreFilter.CoreFilterParameters(PFW, map), Originals[i], Poisson, CoreFilter.Parameters(PoissonRadius));
