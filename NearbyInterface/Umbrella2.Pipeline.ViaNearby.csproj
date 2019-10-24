@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -38,32 +38,32 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Umbrella2.Algorithms.Detections, Version=2.3.7039.30822, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\Umbrella2.Algorithms.Detections.dll</HintPath>
+    <Reference Include="Umbrella2.Algorithms.Detections">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.Algorithms.Detections.dll</HintPath>
     </Reference>
-    <Reference Include="Umbrella2.Algorithms.Images, Version=2.3.7039.30823, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\Umbrella2.Algorithms.Images.dll</HintPath>
+    <Reference Include="Umbrella2.Algorithms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.Algorithms.dll</HintPath>
     </Reference>
-    <Reference Include="Umbrella2.Pipeline.EIOAlgorithms, Version=2.2.7039.30823, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\Umbrella2.Pipeline.EIOAlgorithms.dll</HintPath>
+    <Reference Include="Umbrella2.IO">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.IO.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaAlgorithmsFramework, Version=2.3.7039.30822, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\UmbrellaAlgorithmsFramework.dll</HintPath>
+    <Reference Include="Umbrella2.Algorithms.Images">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Debug\Umbrella2.Algorithms.Images.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaFitsIo, Version=2.1.7039.30168, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\UmbrellaFitsIo.dll</HintPath>
+    <Reference Include="Umbrella2.Numerical.Portable">
+      <HintPath>..\..\Umbrella2\Umbrella2.Numerical.Portable\bin\Debug\Umbrella2.Numerical.Portable.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaPipelineExtraIO, Version=2.1.7039.30168, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\UmbrellaPipelineExtraIO.dll</HintPath>
+    <Reference Include="Umbrella2.Pipeline.EIOAlgorithms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Pipeline.EIOAlgorithms.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaPortableNumerical, Version=2.2.7034.25628, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\UmbrellaPortableNumerical.dll</HintPath>
+    <Reference Include="Umbrella2.Pipeline.ExtraIO">
+      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Pipeline.ExtraIO.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaSharedBase, Version=2.2.7034.27260, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\UmbrellaSharedBase.dll</HintPath>
+    <Reference Include="Umbrella2.Visualizer.Winforms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Visualizer.Winforms.dll</HintPath>
     </Reference>
-    <Reference Include="UmbrellaWinformsVisualizer, Version=2.2.7039.30823, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\umbrella2.2.4.1\lib\net40\UmbrellaWinformsVisualizer.dll</HintPath>
+    <Reference Include="Umbrella2.SharedBase">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.SharedBase.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -105,7 +105,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

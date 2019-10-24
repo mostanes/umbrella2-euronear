@@ -8,6 +8,7 @@ using Umbrella2.Algorithms.Filtering;
 using Umbrella2.Algorithms.Images;
 using Umbrella2.Algorithms.Images.Normalization;
 using Umbrella2.Algorithms.Pairing;
+using Umbrella2.IO;
 using Umbrella2.IO.FITS;
 using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.PropertyModel.CommonProperties;
@@ -52,23 +53,24 @@ namespace Umbrella2.Pipeline.ViaNearby
 			if (HasBadpix)
 			{
 				Logger("Checking badpixel file");
-				FitsFile fif_bad = new FitsFile(Badpixel, false);
-				FitsImage BadpixMap = new FitsImage(fif_bad, true);
+				MMapFitsFile fif_bad = MMapFitsFile.OpenReadFile(Badpixel);
+				FitsImage BadpixMap = new FitsImage(fif_bad);
 				map = BadpixelFilter.CreateFilter(BadpixMap);
 			}
 
 
 			for (int i = 0; i < ImageCount; i++)
 			{
-				FitsFile File = new FitsFile(FilePaths[i], false);
+				MMapFitsFile File = MMapFitsFile.OpenReadFile(FilePaths[i]);
 				Originals[i] = new FitsImage(File);
-				FitsFile PFFile;
+				MMapFitsFile PFFile;
 				string PoissonFN = Path.Combine(RunDir, Path.GetFileNameWithoutExtension(FilePaths[i]) + "_poisson.fits");
 				FitsImage Poisson;
 				if (!System.IO.File.Exists(PoissonFN))
 				{
-					PFFile = new FitsFile(PoissonFN, true);
-					Poisson = new FitsImage(PFFile, Originals[i].Width, Originals[i].Height, Originals[i].Transform, StandardBITPIX);
+					FICHV Header = Originals[i].CopyHeader().ChangeBitPix(StandardBITPIX);
+					PFFile = MMapFitsFile.OpenWriteFile(PoissonFN, Header.Header);
+					Poisson = new FitsImage(PFFile);
 					if (!UseCoreFilter)
 						RestrictedMean.RestrictedMeanFilter.Run(PFW, Originals[i], Poisson, RestrictedMean.Parameters(PoissonRadius));
 					else if (HasBadpix)
@@ -76,7 +78,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 					else throw new ArgumentException("Must specify Badpixel files if trying to run with CoreFilter");
 					Logger("Generated poisson image " + i);
 				}
-				else { PFFile = new FitsFile(PoissonFN, false); Poisson = new FitsImage(PFFile); }
+				else { PFFile = MMapFitsFile.OpenReadFile(PoissonFN); Poisson = new FitsImage(PFFile); }
 				Poisson.GetProperty<ImageSource>().AddToSet(Originals[i], "Poisson Filtered");
 				Times[i] = (Originals[i].GetProperty<ObservationTime>());
 				if (Operations.HasFlag(EnabledOperations.Normalization))
@@ -92,8 +94,14 @@ namespace Umbrella2.Pipeline.ViaNearby
 			/* Create the central median */
 			string CentralPath = Path.Combine(RunDir, "Central.fits");
 			bool CentralExists = File.Exists(CentralPath);
-			FitsFile CFile = new FitsFile(CentralPath, !CentralExists);
-			Central = CentralExists ? new FitsImage(CFile) : new FitsImage(CFile, Originals[0].Width, Originals[0].Height, Originals[0].Transform, StandardBITPIX);
+			MMapFitsFile CFile;
+			if (!CentralExists)
+			{
+				FICHV Header = Originals[0].CopyHeader().ChangeBitPix(StandardBITPIX);
+				CFile = MMapFitsFile.OpenWriteFile(CentralPath, Header.Header);
+			}
+			else CFile = MMapFitsFile.OpenReadFile(CentralPath);
+			Central = new FitsImage(CFile);
 			if (!CentralExists)
 				HardMedians.MultiImageMedian.Run(null, FirstProcess, Central, HardMedians.MultiImageMedianParameters);
 
@@ -183,8 +191,9 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 				if (Operations.HasFlag(EnabledOperations.OutputDetectionMap))
 				{
-					FitsFile DeOutput = new FitsFile(RunDir + "DOutSeg" + i.ToString() + ".fits", true);
-					FitsImage DeOutIm = new FitsImage(DeOutput, DetectionSource.Width, DetectionSource.Height, DetectionSource.Transform, 16);
+					FICHV Header = DetectionSource.CopyHeader().ChangeBitPix(16);
+					MMapFitsFile DeOutput = MMapFitsFile.OpenWriteFile(RunDir + "DOutSeg" + i.ToString() + ".fits", Header.Header);
+					FitsImage DeOutIm = new FitsImage(DeOutput);
 					var DeData = DeOutIm.LockData(new System.Drawing.Rectangle(0, 0, (int) DetectionSource.Width, (int) DetectionSource.Height), false, false);
 
 
@@ -206,7 +215,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 			LinearityThresholdFilter LTF = new LinearityThresholdFilter() { MaxLineThickness = MaxLineThickness };
 			List<ImageDetection> FilteredDetections = Filter(FullDetectionsList, LTF);
-			StarList.MarkStarCrossed(FilteredDetections, 2);
+			StarList.MarkStarCrossed(FilteredDetections, 2, 250000);
 			PrePair.MatchDetections(FilteredDetections, MaxDistance: MaxPairmatchDistance, MixMatch: MixMatch);
 
 			Logger("Left with " + FilteredDetections.Count + " detections");

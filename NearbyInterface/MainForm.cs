@@ -59,7 +59,11 @@ namespace Umbrella2.Pipeline.ViaNearby
 				if (TryLoadLast()) { LogLine("Core", "Found field not yet run"); LoadedLast = true; }
 				else LogLine("Core", "All fields ran");
 			}
-			if (Config.WatchDir & !LoadedLast) { fileSystemWatcher1.Path = Config.RootInputDir; fileSystemWatcher1.EnableRaisingEvents = true; LogLine("Core", "Watching directory for changes"); }
+			try
+			{
+				if (Config.WatchDir & !LoadedLast) { fileSystemWatcher1.Path = Config.RootInputDir; fileSystemWatcher1.EnableRaisingEvents = true; LogLine("Core", "Watching directory for changes"); }
+			}
+			catch { LogLine("Core", "Could not watch root input directory."); }
 			Pipeline = new StandardPipeline();
 			textBox3.Text = Config.RootOutputDir;
 			LogLine("Core", "Loading integrated plugins");
@@ -71,8 +75,11 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 		bool TryLoadLast()
 		{
-			if (!Directory.Exists(Config.RootInputDir)) LogLine("Autoload", "Input directory does not exist");
-			if (!Directory.Exists(Config.RootOutputDir)) LogLine("Autoload", "Output directory does not exist");
+			bool Err = false;
+			if (!Directory.Exists(Config.RootInputDir)) { LogLine("Autoload", "Input directory does not exist"); Err = true; }
+			if (!Directory.Exists(Config.RootOutputDir)) { LogLine("Autoload", "Output directory does not exist"); Err = true; }
+			if (Err) return false;
+
 			string[] InputDirs = Directory.GetDirectories(Config.RootInputDir);
 			string[] OutputDirs = Directory.GetDirectories(Config.RootOutputDir);
 			Array.Sort(InputDirs);

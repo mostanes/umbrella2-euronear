@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Umbrella2.IO;
 using Umbrella2.IO.FITS;
 
 namespace Umbrella2.Pipeline.ViaNearby
@@ -21,8 +22,10 @@ namespace Umbrella2.Pipeline.ViaNearby
 		static FitsImage EnsureImage(string RunDir, string Name, int Number, FitsImage Model, int BitPix, Action<FitsImage> Algorithm, List<ImageProperties> ExtraProperties = null)
 		{
 			string ImagePath = Path.Combine(RunDir, Name + Number.ToString() + ".fits");
-			if (File.Exists(ImagePath)) return new FitsImage(new FitsFile(ImagePath, false));
-			FitsImage Image = new FitsImage(new FitsFile(ImagePath, true), Model.Width, Model.Height, Model.Transform, BitPix, ExtraProperties);
+			if (File.Exists(ImagePath)) return new FitsImage(MMapFitsFile.OpenReadFile(ImagePath));
+			FICHV values = Model.CopyHeader().ChangeBitPix(BitPix);
+			MMapFitsFile file = MMapFitsFile.OpenWriteFile(ImagePath, values.Header);
+			FitsImage Image = new FitsImage(file);
 			Algorithm(Image);
 			return Image;
 		}
