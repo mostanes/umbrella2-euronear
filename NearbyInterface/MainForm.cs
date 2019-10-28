@@ -190,10 +190,13 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 		delegate void ResultShower(List<Tracklet> Tracklets, int i);
 
-		static void ShowResults(List<Tracklet> Tracklets, int i)
+		void ShowResults(List<Tracklet> Tracklets, int i)
 		{
 			TrackletOutput TKO = new TrackletOutput("Tracklet viewer for CCD" + i.ToString());
 			TKO.Tracklets = Tracklets;
+			TKO.ReportName = Path.Combine(textBox2.Text, "mpcreport.txt");
+			TKO.ObservatoryCode = "950";
+			TKO.Band = ExtraIO.MPCOpticalReportFormat.MagnitudeBand.R;
 			TKO.Show();
 		}
 
@@ -204,7 +207,8 @@ namespace Umbrella2.Pipeline.ViaNearby
 			string TPath = textBox2.Text;
 			if (!TryValidateInputPath(TPath))
 			{
-				TPath += Path.DirectorySeparatorChar + "resampleRow";
+				//TPath += Path.DirectorySeparatorChar + "resampleRow";
+				TPath += Path.DirectorySeparatorChar + "resamp";
 				if(!Directory.Exists(TPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return; }
 				if (!TryValidateInputPath(TPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return; }
 			}
@@ -221,9 +225,11 @@ namespace Umbrella2.Pipeline.ViaNearby
 			foreach(string s in FITS)
 			{
 				string FN = Path.GetFileNameWithoutExtension(s);
-				int idx = FN.IndexOf("CCD");
+				//int idx = FN.IndexOf("CCD");
+				int idx = FN.IndexOf(".resamp");
 				if (idx == -1) return false;
-				char CCDNum = FN[idx + 3];
+				//char CCDNum = FN[idx + 3];
+				char CCDNum = FN[idx - 1];
 				int CCDnum = CCDNum - '1';
 				while (CCDf.Count < CCDnum + 1) CCDf.Add(new List<string>());
 				CCDf[CCDnum].Add(s);
@@ -235,7 +241,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 		static bool IsFitsExtension(string File)
 		{
 			string Extension = Path.GetExtension(File);
-			if (Extension == ".fit" || Extension == ".fits") return true;
+			if (Extension == ".fit" || Extension == ".fits" || Extension == ".fts") return true;
 			return false;
 		}
 

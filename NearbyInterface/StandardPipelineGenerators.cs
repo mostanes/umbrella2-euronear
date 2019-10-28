@@ -13,9 +13,9 @@ namespace Umbrella2.Pipeline.ViaNearby
 		static bool SelectByReg(Tracklet Input)
 		{
 			double Th = 0.2 / Input.Velocity.ArcSecMin;
-			if (1 - Math.Abs(Input.VelReg.R_TX) > Th) return false;
-			if (1 - Math.Abs(Input.VelReg.R_XY) > Th) return false;
-			if (1 - Math.Abs(Input.VelReg.R_TY) > Th) return false;
+			if (1 - Math.Abs(Input.VelReg.R_TR) > Th) return false;
+			if (1 - Math.Abs(Input.VelReg.R_RD) > Th) return false;
+			if (1 - Math.Abs(Input.VelReg.R_TD) > Th) return false;
 			return true;
 		}
 

@@ -12,7 +12,6 @@ using Umbrella2.IO;
 using Umbrella2.IO.FITS;
 using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.PropertyModel.CommonProperties;
-using static Umbrella2.Algorithms.Filtering.MedianDetectionFilters;
 
 namespace Umbrella2.Pipeline.ViaNearby
 {
@@ -170,7 +169,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 				}
 
 				ImageStatistics SecMedStat = new ImageStatistics(DetectionSource);
-				//foreach (ElevatedRecord er in Originals[i].GetProperty<ObservationTime>().GetRecords()) DetectionSource.Header.Add(er.Name, er);
+				foreach (MetadataRecord er in Originals[i].GetProperty<ObservationTime>().GetRecords()) DetectionSource.Header.Add(er.Name, er);
 
 				LocalDetectionList = new List<ImageDetection>();
 
@@ -184,7 +183,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 				if (Operations.HasFlag(EnabledOperations.BlobDetector))
 				{
-					var SlowList = SlowDetector.DetectDots(DetectionSource, Times[i]);
+					var SlowList = SlowDetector.Detect(DetectionSource);
 					LocalDetectionList.AddRange(SlowList);
 					Logger("Found " + SlowList.Count + " detections with the blob detector");
 				}
@@ -211,23 +210,28 @@ namespace Umbrella2.Pipeline.ViaNearby
 				FullDetectionsList.AddRange(LocalDetectionList.Where((x) => x.FetchProperty<ObjectPoints>().PixelPoints.Length > 100 | x.FetchOrCreate<PairingProperties>().IsDotDetection));
 			}
 			Logger("Filtering and pairing detections...");
-			PoolMDMerger DetectionPool = new PoolMDMerger(Times.Select((x) => x.Time).ToArray());
+			//PoolMDMerger DetectionPool = new PoolMDMerger(Times.Select((x) => x.Time).ToArray());
+			LinePoolSimple lps = new LinePoolSimple();
 
 			LinearityThresholdFilter LTF = new LinearityThresholdFilter() { MaxLineThickness = MaxLineThickness };
-			List<ImageDetection> FilteredDetections = Filter(FullDetectionsList, LTF);
+			List<ImageDetection> FilteredDetections = ImageDetectionFilterTools.Filter(FullDetectionsList, LTF);
 			StarList.MarkStarCrossed(FilteredDetections, 2, 250000);
-			PrePair.MatchDetections(FilteredDetections, MaxDistance: MaxPairmatchDistance, MixMatch: MixMatch);
+			double PSFArc = Math.PI / 180 / 3600;
+			PrePair.MatchDetections(FilteredDetections, MaxPairmatchDistance, MixMatch, PSFArc);
 
 			Logger("Left with " + FilteredDetections.Count + " detections");
-			DetectionPool.LoadDetections(FilteredDetections);
-
-			DetectionPool.GeneratePool();
-			var Pairings = DetectionPool.Search();
+			lps.LoadDetections(FilteredDetections);
+			//DetectionPool.LoadDetections(FilteredDetections);
+			lps.GeneratePool();
+			//DetectionPool.GeneratePool();
+			//var Pairings = DetectionPool.Search();
+			var Pairings = lps.FindTracklets();
 
 			Logger("Found " + Pairings.Count + " raw tracklets");
 
-			var TKList = Pairings.Select((ImageDetection[][] x) => x.Where((y) => y.Length > 0).Select(StandardTrackletFactory.MergeStandardDetections).ToArray())
-				.Select((x) => StandardTrackletFactory.CreateTracklet(x)).ToList();
+			//var TKList = Pairings.Select((ImageDetection[][] x) => x.Where((y) => y.Length > 0).Select(StandardTrackletFactory.MergeStandardDetections).ToArray())
+			//	.Select((x) => StandardTrackletFactory.CreateTracklet(x)).ToList();
+			var TKList = Pairings;
 			var TK2List = TrackletFilters.Filter(TKList, new LinearityTest());
 
 			var TK3L = TK2List.Where(SelectByReg).ToList();
