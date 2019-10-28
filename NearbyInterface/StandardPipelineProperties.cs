@@ -106,6 +106,6 @@ namespace Umbrella2.Pipeline.ViaNearby
 		[Category("Core")]
 		[DisplayName("Enabled operations")]
 		[Editor(typeof(General.Utils.FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]
-		public EnabledOperations Operations { get; set; } = (EnabledOperations) 11;
+		public EnabledOperations Operations { get; set; } = (EnabledOperations) (11+64);
 	}
 }

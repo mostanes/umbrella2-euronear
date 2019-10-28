@@ -115,5 +115,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Umbrella2.Pipeline.Standard\Umbrella2.Pipeline.Standard.csproj">
+      <Project>{1CF49A10-B864-4DFF-88F3-4F040CD31615}</Project>
+      <Name>Umbrella2.Pipeline.Standard</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

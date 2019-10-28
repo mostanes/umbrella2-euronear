@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1CF49A10-B864-4DFF-88F3-4F040CD31615}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Umbrella2.Pipeline.Standard</RootNamespace>
+    <AssemblyName>Umbrella2.Pipeline.Standard</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AssemblyName></AssemblyName>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>false</DelaySign>
+    <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Umbrella2.Algorithms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.Algorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.IO">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.SharedBase">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.SharedBase.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Algorithms.Images">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Debug\Umbrella2.Algorithms.Images.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Algorithms.Detections">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.Algorithms.Detections.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="Umbrella2.Pipeline.ExtraIO">
+      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Pipeline.ExtraIO.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="StepPipeline.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ClassicPipeline.cs" />
+    <Compile Include="PipelineHelperFunctions.cs" />
+    <Compile Include="ClassicPipelineConfig.cs" />
+    <Compile Include="ClassicPipelineExtra.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
