@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Umbrella2.Algorithms.Detection;
 using Umbrella2.Algorithms.Filtering;
 using Umbrella2.Algorithms.Images;
@@ -15,12 +16,17 @@ namespace Umbrella2.Pipeline.Standard
 {
 	public partial class ClassicPipeline
 	{
-		Action<string> Logger;
+		public Action<string> Logger;
 
 		void Log(bool Generated, string Name, int Number)
 		{
 			if (Generated) Logger("Generated " + Name + " image " + Number);
 			else Logger("Found " + Name + " image " + Number);
+		}
+
+		void LogDet(string Detector, int DetNum)
+		{
+			Logger("Found " + DetNum + " detections using " + Detector + " detector");
 		}
 
 		public List<Tracklet> AnalyzeCCD(PipelineArguments Args)
@@ -39,6 +45,7 @@ namespace Umbrella2.Pipeline.Standard
 
 			Step.StepPipeline sp = new Step.StepPipeline(StandardBITPIX, RunDir, Args.Inputs.Length);
 			sp.LogHookImage = Log;
+			sp.LogHookDetection = LogDet;
 
 			bool HasBadpix = Args.Badpixel != null;
 
@@ -49,6 +56,8 @@ namespace Umbrella2.Pipeline.Standard
 			for (int i = 0; i < ImageCount; i++)
 			{
 				FitsImage Pipeline = Args.Inputs[i];
+				Pipeline.GetProperty<ImageSource>().AddToSet(Pipeline, "Original");
+				sp.SetModel(i, Pipeline, new List<IO.ImageProperties>() { Pipeline.GetProperty<ObservationTime>() });
 
 				if (!UseCoreFilter)
 					sp.RunPipeline(RestrictedMean.RestrictedMeanFilter, "Poisson", i, ref Pipeline, PFW, RestrictedMean.Parameters(PoissonRadius));
@@ -83,27 +92,34 @@ namespace Umbrella2.Pipeline.Standard
 
 			/* Prepare the mask, slow object detector, trail detector, weights for second median filtering, etc. */
 			ImageStatistics CentralStats = new ImageStatistics(Central);
+			if (Args.Clipped) CentralStats = new ImageStatistics(Central, CentralStats.ZeroLevel, 2 * CentralStats.StDev);
 			StarData StarList = new StarData();
 			ComputeDetectorData(Central, CentralStats, StarList, out MaskByMedian.MaskProperties MaskProp, out DotDetector SlowDetector,
 				out LongTrailDetector.LongTrailData LTD);
+			if (Args.Clipped)
+			{
+				SlowDetector.HighThresholdMultiplier *= 2;
+				SlowDetector.LowThresholdMultiplier *= 2;
+			}
 
-			DetectionReducer dr = new DetectionReducer();
+			DetectionReducer dr = new DetectionReducer() { PairingRadius = 0.7 };
 			if (Operations.HasFlag(EnabledOperations.SourceExtractor))
 			{
 				try
 				{
-					var Dets = ExtraIO.SourceExtractor.ParseSEFile(File.ReadLines(Args.CentralCatalog), Central);
-					dr.LoadDetections(Dets);
+					dr.LoadStars(StarList.FixedStarList);
 				}
 				catch (Exception ex) { throw new ArgumentException("Could not read detections from SE catalog.", ex); }
 				dr.GeneratePool();
 			}
+
 
 			Logger("Set up detectors");
 
 			List<ImageDetection> FullDetectionsList = new List<ImageDetection>();
 			double[] FMW2 = PipelineHelperFunctions.LinearizedMedianKernel();
 			LTLimit ltl = new LTLimit() { MinPix = TrailMinPix };
+			RipFilter rf = new RipFilter() { SigmaTop = 30 };
 
 			Logger("Ready for final image processing and detection");
 
@@ -128,13 +144,13 @@ namespace Umbrella2.Pipeline.Standard
 					   LongTrailDetector.PrepareAlgorithmForImage(img, SecMedStat, ref LTD);
 					   LongTrailDetector.Algorithm.Run(LTD, DetectionSource, LongTrailDetector.Parameters);
 					   return LTD.Results;
-				   }, DetectionSource, "Trail");
+				   }, DetectionSource, "Trail", DetectionAlgorithm.Trail);
 					LocalDetectionList.AddRange(Dets);
 				}
 
 				if (Operations.HasFlag(EnabledOperations.BlobDetector))
 				{
-					var Dets = sp.RunDetector(SlowDetector.Detect, DetectionSource, "Blob");
+					var Dets = sp.RunDetector(SlowDetector.Detect, DetectionSource, "Blob", DetectionAlgorithm.Blob);
 					LocalDetectionList.AddRange(Dets);
 				}
 
@@ -142,17 +158,21 @@ namespace Umbrella2.Pipeline.Standard
 				{
 					var dts = sp.RunDetector((arg) =>
 					{
-						List<ImageDetection> Dets = ExtraIO.SourceExtractor.ParseSEFile(File.ReadLines(Args.Catalogs[i]), Args.Inputs[i]);
+						List<ImageDetection> Dets = ExtraIO.SourceExtractor.ParseSEFile(Args.CatalogData[i], Args.Inputs[i]);
+						Dets = Dets.Where((x) => x.FetchProperty<ObjectPhotometry>().Flux > 300).ToList();
 						var ND = dr.Reduce(Dets);
 						return ND;
-					}, DetectionSource, "SE");
+					}, DetectionSource, "SE", DetectionAlgorithm.SourceExtractor);
 					LocalDetectionList.AddRange(dts);
 				}
 
 				if (Operations.HasFlag(EnabledOperations.OutputDetectionMap))
 					DetectionDebugMap(RunDir, i, LocalDetectionList, DetectionSource);
-					
-				var NLDL = sp.RunFilters(LocalDetectionList, "LocalToGlobal", ltl);
+
+				rf.ImgMean = SecMedStat.ZeroLevel;
+				rf.ImgSigma = SecMedStat.StDev;
+				var NLDL = sp.RunFilters(LocalDetectionList, "LocalToGlobal", ltl, rf);
+				Logger("Total " + NLDL.Count + " detections.");
 				FullDetectionsList.AddRange(NLDL);
 			}
 			Logger("Filtering and pairing detections...");
@@ -160,6 +180,10 @@ namespace Umbrella2.Pipeline.Standard
 			LinearityThresholdFilter LTF = new LinearityThresholdFilter() { MaxLineThickness = MaxLineThickness };
 			List<ImageDetection> FilteredDetections = sp.RunFilters(FullDetectionsList, "MainFilter", LTF);
 			StarList.MarkStarCrossed(FilteredDetections, StarCrossRadiusM, StarCrossMinFlux);
+			if (Args.CCDBadzone != null)
+				FilteredDetections = sp.RunFilters(FilteredDetections, "Badzone", Args.CCDBadzone);
+
+			Logger("Before PrePair " + FilteredDetections.Count);
 			PrePair.MatchDetections(FilteredDetections, MaxPairmatchDistance, MixMatch, SameArcSep);
 
 			Logger("Left with " + FilteredDetections.Count + " detections");
@@ -168,15 +192,24 @@ namespace Umbrella2.Pipeline.Standard
 
 			lps.GeneratePool();
 			var Pairings = lps.FindTracklets();
+			sp.NotePairings(FilteredDetections, Pairings);
 
 			Logger("Found " + Pairings.Count + " raw tracklets");
 
 			LinearityTest lintest = new LinearityTest();
-			var TK2List = sp.RunFilters(Pairings, "Tracklet Filtering", lintest);
+			StaticFilter stf = new StaticFilter();
+			TotalError te = new TotalError();
+			var TK2List = sp.RunFilters(Pairings, "Tracklet Filtering", stf, te);
 
-			Logger("Done. " + TK2List.Count + " candidate objects found.");
+			Logger("After filtering: " + TK2List.Count + " candidate objects found");
 
-			return TK2List;
+			sp.LogDetections(Path.Combine(RunDir, "detlog.txt"));
+
+			var Recovered = RecoverTracklets(TK2List, Args.Inputs, Path.Combine(RunDir, "reclog.txt"));
+
+			Logger("Recovered " + Recovered.Count + " candidate objects");
+
+			return Recovered;
 		}
 	}
 }

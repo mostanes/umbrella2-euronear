@@ -38,39 +38,33 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Umbrella2.Algorithms.Detections">
-      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.Algorithms.Detections.dll</HintPath>
-    </Reference>
-    <Reference Include="Umbrella2.Algorithms">
-      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.Algorithms.dll</HintPath>
-    </Reference>
     <Reference Include="Umbrella2.IO">
-      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="Umbrella2.Algorithms.Images">
-      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Debug\Umbrella2.Algorithms.Images.dll</HintPath>
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms\bin\Release\Umbrella2.IO.dll</HintPath>
     </Reference>
     <Reference Include="Umbrella2.Numerical.Portable">
-      <HintPath>..\..\Umbrella2\Umbrella2.Numerical.Portable\bin\Debug\Umbrella2.Numerical.Portable.dll</HintPath>
-    </Reference>
-    <Reference Include="Umbrella2.Pipeline.EIOAlgorithms">
-      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Pipeline.EIOAlgorithms.dll</HintPath>
-    </Reference>
-    <Reference Include="Umbrella2.Pipeline.ExtraIO">
-      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Pipeline.ExtraIO.dll</HintPath>
-    </Reference>
-    <Reference Include="Umbrella2.Visualizer.Winforms">
-      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Visualizer.Winforms.dll</HintPath>
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.Numerical.Portable.dll</HintPath>
     </Reference>
     <Reference Include="Umbrella2.SharedBase">
-      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Debug\Umbrella2.SharedBase.dll</HintPath>
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.SharedBase.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Visualizer.Winforms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Release\Umbrella2.Visualizer.Winforms.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Algorithms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.Algorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Algorithms.Detections">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Detections\bin\Release\Umbrella2.Algorithms.Detections.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Algorithms.Images">
+      <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.Algorithms.Images.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Pipeline.ExtraIO">
+      <HintPath>..\..\Umbrella2\Umbrella2.Pipeline.ExtraIO\bin\Release\Umbrella2.Pipeline.ExtraIO.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configurator.cs" />
-    <Compile Include="FlagsUITypeEditor.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="FrontendConfig.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -113,6 +107,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="FlagsUITypeEditor.cs">
+      <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

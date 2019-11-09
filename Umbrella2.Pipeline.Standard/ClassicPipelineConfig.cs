@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
+using Umbrella2.Algorithms.Filtering;
 using Umbrella2.Pipeline.ExtraIO;
 
 namespace Umbrella2.Pipeline.Standard
@@ -43,8 +44,9 @@ namespace Umbrella2.Pipeline.Standard
 		public string RunDir;
 		public IO.FITS.FitsImage[] Inputs;
 		public string Badpixel;
-		public string[] Catalogs;
-		public string CentralCatalog;
+		public System.Collections.Generic.IEnumerable<string>[] CatalogData;
+		public bool Clipped;
+		public BadzoneFilter CCDBadzone;
 	}
 
 	[Flags]
@@ -71,12 +73,12 @@ namespace Umbrella2.Pipeline.Standard
 		[Description("Amount to add to the radius to be masked.")]
 		[Category("Star masking")]
 		[DisplayName("Extra mask radius")]
-		public double ExtraMaskRadius { get; set; } = 2;
+		public double ExtraMaskRadius { get; set; } = 1;
 
 		[Description("Amount by which to scale the star radius on masking.")]
 		[Category("Star masking")]
 		[DisplayName("Mask radius multiplier")]
-		public double MaskRadiusMultiplier { get; set; } = 1.15;
+		public double MaskRadiusMultiplier { get; set; } = 1.1;
 
 		[Description("Threshold of detection for the blob detection algorithm. Value in standard deviations.")]
 		[Category("Blob detection")]
@@ -108,6 +110,11 @@ namespace Umbrella2.Pipeline.Standard
 		[Category("Core")]
 		[DisplayName("Use CoreFilter")]
 		public bool UseCoreFilter { get; set; } = false;
+
+		[Description("Skips CCD 2 from the pipeline.")]
+		[Category("Core")]
+		[DisplayName("Skip CCD 2")]
+		public bool SkipCCD2 { get; set; } = false;
 
 		[Description("Radius of the second median kernel. Value in pixels.")]
 		[Category("Deep smoothing")]
@@ -168,7 +175,7 @@ namespace Umbrella2.Pipeline.Standard
 		[Description("Number of stellar radii at which the object is considered to cross a star.")]
 		[Category("Filtering")]
 		[DisplayName("Star-crossing radius multiplier")]
-		public double StarCrossRadiusM { get; set; } = 1.8;
+		public double StarCrossRadiusM { get; set; } = 1.55;
 
 		[Description("Minimum flux of a star before it is used to mark star-crossed detections.")]
 		[Category("Filtering")]
@@ -189,12 +196,22 @@ namespace Umbrella2.Pipeline.Standard
 		[Description("Extra distance to add to the search radius when looking for detections. Value in arcseconds.")]
 		[Category("Pairing")]
 		[DisplayName("Extra search radius")]
-		public double ExtraSearchRadius { get; set; } = 5.0;
+		public double ExtraSearchRadius { get; set; } = 3.5;
 
 		[Description("Selects which operations are run on the input images.")]
 		[Category("Core")]
 		[DisplayName("Enabled operations")]
-		public EnabledOperations Operations { get; set; } = (EnabledOperations)(11 + 64);
+		public EnabledOperations Operations { get; set; } = (EnabledOperations)(11 + 64 + 128);
+
+		[Description("Detection threshold on original images. Value in standard deviations.")]
+		[Category("Original image recovery")]
+		[DisplayName("Detection threshold")]
+		public double OriginalThreshold { get; set; } = 1.75;
+
+		[Description("Maximum radius to include in detection.")]
+		[Category("Original image recovery")]
+		[DisplayName("Recovery radius")]
+		public double RecoveryRadius { get; set; } = 10;
 
 		[Description("MPC Observatory code to write in MPC reports.")]
 		[Category("Reporting")]

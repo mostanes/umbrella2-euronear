@@ -9,9 +9,10 @@ namespace Umbrella2.Pipeline.ViaNearby
 	public partial class PipelineConfig : Form
 	{
 		FrontendConfig Config;
-		StandardPipeline Pipeline;
+		Standard.ClassicPipeline Pipeline;
+		static bool LoadedTD = false;
 
-		public PipelineConfig(FrontendConfig Configuration, StandardPipeline Pipeline)
+		public PipelineConfig(FrontendConfig Configuration, Standard.ClassicPipeline Pipeline)
 		{
 			InitializeComponent();
 			Config = Configuration;
@@ -25,7 +26,14 @@ namespace Umbrella2.Pipeline.ViaNearby
 			checkBox1.Checked = Config.LoadLast;
 			checkBox2.Checked = Config.WatchDir;
 			textBox3.Text = Config.Badpixel;
-
+#warning Add proper type editor
+			/*
+			if(!LoadedTD)
+			{
+				General.Utils.FlagEnumUIEditor fie = new General.Utils.FlagEnumUIEditor();
+				System.ComponentModel.TypeDescriptor.AddProvider(fie, typeof(Standard.EnabledOperations));
+			}
+			*/
 			propertyGrid1.SelectedObject = Pipeline;
 		}
 

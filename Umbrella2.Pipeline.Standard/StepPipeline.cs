@@ -17,13 +17,14 @@ namespace Umbrella2.Pipeline.Step
 		string RunDir;
 		FICHV[] Headers;
 
-		List<EquatorialPoint> AllDetections;
+		List<EquatorialPoint> AllDetectionCenters;
+		List<ImageDetection> AllDetections;
 		Dictionary<EquatorialPoint, string> RemovalPoints;
 
 		public Action<bool, string, int> LogHookImage;
 		public Action<string, int> LogHookDetection;
 
-		void SetModel(int Number, FitsImage Model, List<ImageProperties> ExtraProperties)
+		public void SetModel(int Number, FitsImage Model, List<ImageProperties> ExtraProperties)
 		{
 			Headers[Number] = Model.CopyHeader().ChangeBitPix(StandardBitpix);
 
@@ -37,7 +38,8 @@ namespace Umbrella2.Pipeline.Step
 			StandardBitpix = StandardBitPix;
 			this.RunDir = RunDir;
 			Headers = new FICHV[NoImages];
-			AllDetections = new List<EquatorialPoint>();
+			AllDetectionCenters = new List<EquatorialPoint>();
+			AllDetections = new List<ImageDetection>();
 			RemovalPoints = new Dictionary<EquatorialPoint, string>();
 		}
 
@@ -69,7 +71,7 @@ namespace Umbrella2.Pipeline.Step
 
 			Result.GetProperty<ImageSource>().AddToSet(Pipeline, Name);
 			Pipeline = Result;
-			LogHookImage(Value, Name, Number);
+			LogHookImage(!Value, Name, Number);
 		}
 
 		public void RunPipeline<T>(PositionDependentMap<T> Map, string Name, int Number, ref FitsImage Pipeline, T Argument, AlgorithmRunParameters Parameters)
@@ -80,13 +82,20 @@ namespace Umbrella2.Pipeline.Step
 
 			Result.GetProperty<ImageSource>().AddToSet(Pipeline, Name);
 			Pipeline = Result;
-			LogHookImage(Value, Name, Number);
+			LogHookImage(!Value, Name, Number);
 		}
 
-		public List<ImageDetection> RunDetector(Func<FitsImage,List<ImageDetection>> Detector, FitsImage Image, string DetectorName)
+		public List<ImageDetection> RunDetector(Func<FitsImage,List<ImageDetection>> Detector, FitsImage Image, string DetectorName, DetectionAlgorithm Algo)
 		{
 			var Detections = Detector(Image);
-			AllDetections.AddRange(Detections.Select((x) => x.Barycenter.EP));
+			foreach (var d in Detections)
+				if (d.TryFetchProperty(out PairingProperties pp))
+					pp.Algorithm = Algo;
+				else
+					d.AppendProperty(new PairingProperties() { Algorithm = Algo });
+
+			AllDetections.AddRange(Detections);
+			AllDetectionCenters.AddRange(Detections.Select((x) => x.Barycenter.EP));
 			LogHookDetection(DetectorName, Detections.Count);
 			return Detections;
 		}
@@ -103,7 +112,8 @@ namespace Umbrella2.Pipeline.Step
 					 {
 						 Keep = false;
 						 string RemName = "Filter name: " + filter.GetType().Name + "\nPoint: " + RemovalPoint;
-						 RemovalPoints.Add(obj.Barycenter.EP, RemName);
+						 lock (RemovalPoints)
+							 try {RemovalPoints.Add(obj.Barycenter.EP, RemName); } catch { }
 						 break;
 					 }
 				 }
@@ -126,7 +136,11 @@ namespace Umbrella2.Pipeline.Step
 						foreach (ImageDetection obj in t.Detections)
 						{
 							string RemName = "Filter name: " + filter.GetType().Name + "\nPoint: " + RemovalPoint;
-							RemovalPoints.Add(obj.Barycenter.EP, RemName);
+							lock (RemovalPoints)
+							{
+								if (RemovalPoints.ContainsKey(obj.Barycenter.EP)) RemovalPoints[obj.Barycenter.EP] = "Multiple tracklets removed";
+								else RemovalPoints.Add(obj.Barycenter.EP, RemName);
+							}
 						}
 						break;
 					}
@@ -135,5 +149,38 @@ namespace Umbrella2.Pipeline.Step
 			});
 			return New;
 		}
+
+		public void NotePairings(List<ImageDetection> Input, List<Tracklet> Result)
+		{
+			foreach (ImageDetection imd in Input)
+				if (!Result.Any((x) => x.Detections.Contains(imd)))
+					RemovalPoints.Add(imd.Barycenter.EP, "Pairing");
+		}
+
+		public List<string> QueryWhyNot(string RA_Dec, double ArcSecLook)
+		{
+			ArcSecLook *= Math.PI / 180 / 3600;
+			EquatorialPoint eqp = Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter.ParseFromMPCString(RA_Dec);
+			List<string> r = new List<string>();
+			foreach(var kvp in RemovalPoints)
+			{
+				if ((kvp.Key ^ eqp) < ArcSecLook)
+					r.Add(kvp.Value);
+			}
+			return r;
+		}
+
+		public void LogDetections(string Filename)
+		{
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			foreach(var kvp in RemovalPoints)
+			{
+				sb.AppendLine(ExtraIO.EquatorialPointStringFormatter.FormatToString(kvp.Key, ExtraIO.EquatorialPointStringFormatter.Format.MPC));
+				sb.AppendLine(kvp.Value);
+			}
+			File.WriteAllText(Filename, sb.ToString());
+		}
+
+		public List<ImageDetection> GetAllDetections() => AllDetections;
 	}
 }

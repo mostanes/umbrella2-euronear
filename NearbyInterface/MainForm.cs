@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Umbrella2.Visualizers.Winforms;
+using Umbrella2.Algorithms.Filtering;
+using Umbrella2.IO.FITS;
+using Umbrella2.Visualizer.Winforms;
 
 namespace Umbrella2.Pipeline.ViaNearby
 {
@@ -13,8 +15,11 @@ namespace Umbrella2.Pipeline.ViaNearby
 	{
 		FrontendConfig Config;
 		const string ConfigFile = "config.txt";
-		StandardPipeline Pipeline;
+		Umbrella2.Pipeline.Standard.ClassicPipeline Pipeline;
 		List<string>[] InputFiles;
+		string[] MainCat;
+		List<string>[] CatFiles;
+		Dictionary<int, BadzoneFilter> Badzones;
 
 		public MainForm()
 		{
@@ -64,7 +69,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 				if (Config.WatchDir & !LoadedLast) { fileSystemWatcher1.Path = Config.RootInputDir; fileSystemWatcher1.EnableRaisingEvents = true; LogLine("Core", "Watching directory for changes"); }
 			}
 			catch { LogLine("Core", "Could not watch root input directory."); }
-			Pipeline = new StandardPipeline();
+			Pipeline = new Umbrella2.Pipeline.Standard.ClassicPipeline();
 			textBox3.Text = Config.RootOutputDir;
 			LogLine("Core", "Loading integrated plugins");
 			foreach (System.Reflection.Assembly asm in Program.GetAssemblies())
@@ -162,20 +167,74 @@ namespace Umbrella2.Pipeline.ViaNearby
 			textBox3.Text = Config.RootOutputDir + e.Name;
 		}
 
+		void TryGetBadzone()
+		{
+			if (!File.Exists("badzone.txt")) return;
+			Badzones = new Dictionary<int,BadzoneFilter>();
+			int C_CCD = 0;
+			List<List<PixelPoint>> c_pix = null;
+			foreach (string Line in File.ReadLines("badzone.txt"))
+			{
+				if (Line[0] == '#') continue;
+				if (Line[0] == 'C')
+				{
+					if (c_pix != null)
+						Badzones.Add(C_CCD, new BadzoneFilter(c_pix));
+					c_pix = new List<List<PixelPoint>>();
+					C_CCD = int.Parse(Line.Substring(1));
+				}
+				else
+				{
+					List<PixelPoint> lpp = new List<PixelPoint>();
+					string[] ppl = Line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+					foreach (string p in ppl)
+					{
+						string[] h = p.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+						lpp.Add(new PixelPoint() { X = double.Parse(h[0]), Y = double.Parse(h[1]) });
+					}
+					c_pix.Add(lpp);
+				}
+			}
+			if (c_pix != null)
+				Badzones.Add(C_CCD, new BadzoneFilter(c_pix));
+		}
+
 		void RunPipeline()
 		{
+			string FieldName = textBox1.Text;
 			int i;
 			string[] BadpixSet = null;
 			if(Pipeline.UseCoreFilter) BadpixSet = Directory.GetFiles(Config.Badpixel);
+			TryGetBadzone();
 			for (i = 0; i < InputFiles.Length; i++)
 			{
 				int CCDNum = i + 1;
+				if (Pipeline.SkipCCD2 & CCDNum == 2) continue;
+
 				string CCDStr = "CCD" + CCDNum.ToString();
 				string CBP = BadpixSet == null ? null : BadpixSet.Where((x) => x.Contains(CCDStr)).First();
 				List<Tracklet> Result;
+				FitsImage[] fims;
 				try
 				{
-					Result = Pipeline.AnalyzeCCD(Path.Combine(textBox3.Text, CCDStr), InputFiles[i].ToArray(), CBP, (x) => InvokeLogLine("Pipeline", x, CCDStr));
+					MMapFitsFile[] mmfs = InputFiles[i].Select((x) => MMapFitsFile.OpenReadFile(x)).ToArray();
+					fims = mmfs.Select((x) => new FitsImage(x)).ToArray();
+					BadzoneFilter bzf = null;
+					if (Badzones != null && Badzones.ContainsKey(CCDNum))
+						bzf = Badzones[CCDNum];
+					Standard.PipelineArguments pa = new Standard.PipelineArguments()
+					{
+						Badpixel = CBP,
+						RunDir = Path.Combine(textBox3.Text, CCDStr),
+						Inputs = fims,
+						CatalogData = CatFiles[i].Select(File.ReadLines).ToArray(),
+						Clipped = false,
+						CCDBadzone = bzf
+					};
+
+					Pipeline.Logger = (x) => InvokeLogLine("Pipeline", x, CCDStr);
+
+					Result = Pipeline.AnalyzeCCD(pa);
 				}
 				catch (Exception ex)
 				{
@@ -184,19 +243,24 @@ namespace Umbrella2.Pipeline.ViaNearby
 					InvokeLogLine("Pipeline Error", "Stack trace: " + ex.StackTrace);
 					return;
 				}
-				this.Invoke((ResultShower) ShowResults, Result, i);
+				this.Invoke((ResultShower)ShowResults, Result, i, fims, FieldName);
 			}
 		}
 
-		delegate void ResultShower(List<Tracklet> Tracklets, int i);
+		delegate void ResultShower(List<Tracklet> Tracklets, int i, IList<FitsImage> Images, string FieldName);
 
-		void ShowResults(List<Tracklet> Tracklets, int i)
+		void ShowResults(List<Tracklet> Tracklets, int i, IList<FitsImage> Images, string FieldName)
 		{
-			TrackletOutput TKO = new TrackletOutput("Tracklet viewer for CCD" + i.ToString());
+			int CCDNum = i + 1;
+			TrackletOutput TKO = new TrackletOutput("Umbrella " + FieldName + ", CCD " + CCDNum.ToString());
+			TKO.ImageSet = (IList<IO.Image>)Images;
 			TKO.Tracklets = Tracklets;
-			TKO.ReportName = Path.Combine(textBox2.Text, "mpcreport.txt");
+			TKO.ReportName = Path.Combine(textBox2.Text, "mpc3report.txt");
 			TKO.ObservatoryCode = "950";
 			TKO.Band = ExtraIO.MPCOpticalReportFormat.MagnitudeBand.R;
+			TKO.CCDNumber = CCDNum;
+			TKO.FieldName = FieldName;
+			TKO.ReportFieldName = FieldName.Substring(0, 2) + FieldName.Substring(FieldName.Length - 2, 2);
 			TKO.Show();
 		}
 
@@ -207,19 +271,22 @@ namespace Umbrella2.Pipeline.ViaNearby
 			string TPath = textBox2.Text;
 			if (!TryValidateInputPath(TPath))
 			{
-				//TPath += Path.DirectorySeparatorChar + "resampleRow";
-				TPath += Path.DirectorySeparatorChar + "resamp";
-				if(!Directory.Exists(TPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return; }
-				if (!TryValidateInputPath(TPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return; }
+				if (TrySEValidateInputPath(TPath))
+				{
+					textBox2.BackColor = System.Drawing.Color.LightBlue;
+					button1.Enabled = true;
+				}
 			}
-
-			textBox2.BackColor = System.Drawing.Color.LightGreen;
-			button1.Enabled = true;
+			else
+			{
+				textBox2.BackColor = System.Drawing.Color.LightGreen;
+				button1.Enabled = true;
+			}
 		}
 
-		bool TryValidateInputPath(string TPath)
+		bool TryValidateInputPath(string FTPath)
 		{
-			string[] FITS = Directory.EnumerateFiles(TPath).Where(IsFitsExtension).ToArray();
+			string[] FITS = Directory.EnumerateFiles(FTPath).Where(IsFitsExtension).ToArray();
 			if (FITS.Length == 0) return false;
 			List<List<string>> CCDf = new List<List<string>>();
 			foreach(string s in FITS)
@@ -235,6 +302,33 @@ namespace Umbrella2.Pipeline.ViaNearby
 				CCDf[CCDnum].Add(s);
 			}
 			InputFiles = CCDf.ToArray();
+			return true;
+		}
+
+		bool TrySEValidateInputPath(string TPath)
+		{
+			string FTPath = Path.Combine(TPath, "resampleRow");
+			if (!Directory.Exists(FTPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return false; }
+			if (!TryValidateInputPath(FTPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return false; }
+			textBox2.BackColor = System.Drawing.Color.LightGreen;
+			button1.Enabled = true;
+
+			try
+			{
+				string SPath = Path.Combine(TPath, "sextractorCat");
+				List<string> Catpaths = Directory.EnumerateFiles(SPath).ToList();
+				CatFiles = new List<string>[InputFiles.Length];
+				for (int i = 0; i < InputFiles.Length; i++)
+				{
+					CatFiles[i] = new List<string>();
+					foreach (string s in InputFiles[i])
+					{
+						string fn = Path.GetFileNameWithoutExtension(s);
+						CatFiles[i].Add(Path.Combine(SPath, fn + ".cat"));
+					}
+				}
+			}
+			catch { return false; }
 			return true;
 		}
 
