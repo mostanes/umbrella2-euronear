@@ -47,6 +47,8 @@ namespace Umbrella2.Pipeline.Standard
 		public System.Collections.Generic.IEnumerable<string>[] CatalogData;
 		public bool Clipped;
 		public BadzoneFilter CCDBadzone;
+		public string FieldName;
+		public int CCDNumber;
 	}
 
 	[Flags]

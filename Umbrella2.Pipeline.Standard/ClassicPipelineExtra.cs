@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Umbrella2.Algorithms.Detection;
 using Umbrella2.Algorithms.Filtering;
 using Umbrella2.Algorithms.Images;
 using Umbrella2.IO;
 using Umbrella2.IO.FITS;
+using Umbrella2.IO.FITS.KnownKeywords;
+using Umbrella2.Pipeline.EIOAlgorithms;
 using Umbrella2.PropertyModel.CommonProperties;
+using static Umbrella2.Pipeline.EIOAlgorithms.VizieRCalibration;
 
 namespace Umbrella2.Pipeline.Standard
 {
@@ -61,10 +65,66 @@ namespace Umbrella2.Pipeline.Standard
 			LTD.DropCrowdedRegion = true;
 		}
 
-		private List<Tracklet> RecoverTracklets(List<Tracklet> Input, FitsImage[] Images, string Filename)
+		private Dictionary<Image, double> CalibrateZP(FitsImage[] Images)
+		{
+			Dictionary<Image, double> ZP = new Dictionary<Image, double>();
+
+			CalibrationArgs ca = new CalibrationArgs()
+			{
+				ClippingPoint = 60000 * Images[0].GetProperty<SWarpScaling>().FlxScale,
+				MaxFlux = 300000,
+				MaxVizierMag = 22,
+				MinFlux = 500,
+				NonRepThreshold = 1,
+				PositionError = 1,
+				StarHighThreshold = 30,
+				StarLowThreshold = 5
+			};
+
+			Parallel.ForEach(Images, (img) => FindZP(img, ZP, ca));
+
+			return ZP;
+		}
+
+		private bool PrecacheSkyBot(FitsImage[] Images)
+		{
+			foreach (FitsImage img in Images)
+				img.GetProperty<SkyBotImageData>();
+			return true;
+		}
+
+		private void PairSkyBot(List<Tracklet> Tracklets, double ArcLengthSec, string ReportFieldName, int CCDNumber, FitsImage[] ImageSet)
+		{
+			foreach (Image img in ImageSet)
+			{
+				SkyBotImageData skid = img.GetProperty<SkyBotImageData>();
+				skid.RetrieveObjects(ObservatoryCode);
+
+				foreach (Tracklet tk in Tracklets)
+					skid.TryPair(tk, ArcLengthSec);
+
+				var unp = skid.GetUnpaired();
+				if (unp.Count != 0)
+				{
+					Logger("SkyBoT: Unpaired objects left: ");
+					foreach (var o in unp)
+						Logger("SkyBoT: " + ExtraIO.EquatorialPointStringFormatter.FormatToString(o, ExtraIO.EquatorialPointStringFormatter.Format.MPC));
+				}
+			}
+
+			for (int i = 0; i < Tracklets.Count; i++)
+			{
+				Tracklet tk = Tracklets[i];
+				if (!tk.TryFetchProperty(out ObjectIdentity objid)) objid = new ObjectIdentity();
+				objid.ComputeNamescoreWithDefault(tk, null, ReportFieldName, CCDNumber, i);
+				tk.SetResetProperty(objid);
+			}
+		}
+
+		private List<Tracklet> RecoverTracklets(List<Tracklet> Input, FitsImage[] Images, string Filename, Dictionary<Image, double> ZP)
 		{
 			ApproxRecover ar = new ApproxRecover()
-				{ CrossMatchRemove = 3 * Images.Length / 4, ThresholdMultiplier = OriginalThreshold, RecoverRadius = RecoveryRadius };
+			{ CrossMatchRemove = 3 * Images.Length / 4, ThresholdMultiplier = OriginalThreshold, RecoverRadius = RecoveryRadius };
 			List<Tracklet> Results = new List<Tracklet>();
 			System.Text.StringBuilder log = new System.Text.StringBuilder();
 			foreach (Tracklet tk in Input)
@@ -72,11 +132,34 @@ namespace Umbrella2.Pipeline.Standard
 				foreach (ImageDetection imd in tk.Detections)
 					log.AppendLine(ExtraIO.EquatorialPointStringFormatter.FormatToString(imd.Barycenter.EP, ExtraIO.EquatorialPointStringFormatter.Format.MPC));
 				if (ar.RecoverTracklet(tk.VelReg, Images, out Tracklet Rcv))
-				{ Results.Add(Rcv); log.AppendLine("Found\n"); }
+				{
+					Results.Add(Rcv);
+					log.AppendLine("Found\n");
+					foreach (ImageDetection imd in Rcv.Detections)
+						if (imd.TryFetchProperty(out ObjectPhotometry oph))
+							oph.Magnitude = ZP[imd.ParentImage] - 2.5 * Math.Log10(oph.Flux);
+				}
 				else log.AppendLine("Not found\n");
 			}
 			System.IO.File.WriteAllText(Filename, log.ToString());
 			return Results;
+		}
+
+		private void FindZP(Image img, Dictionary<Image, double> ZP, CalibrationArgs ca)
+		{
+			double Mag = 28.9 + 2.5 * Math.Log10(img.GetProperty<SWarpScaling>().FlxScale);
+			double dMag = 0;
+			try
+			{
+				dMag = CalibrateImage(img, ca);
+				if (double.IsNaN(dMag)) Logger("FP error while calibrating flux");
+				else Mag = dMag;
+			}
+			catch (Exception ex) { Logger("Could not calibrate flux. Error: " + ex.Message); }
+
+			Logger("Zeropoint: " + Mag);
+			lock (ZP)
+				ZP.Add(img, Mag);
 		}
 
 		private class LTLimit : IImageDetectionFilter

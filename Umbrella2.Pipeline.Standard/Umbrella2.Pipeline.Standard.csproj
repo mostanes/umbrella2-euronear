@@ -45,14 +45,14 @@
     <Reference Include="Umbrella2.IO">
       <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.IO.dll</HintPath>
     </Reference>
-    <Reference Include="Umbrella2.Pipeline.EIOAlgorithms">
-      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Pipeline.EIOAlgorithms.dll</HintPath>
-    </Reference>
     <Reference Include="Umbrella2.Pipeline.ExtraIO">
       <HintPath>..\..\Umbrella2\Umbrella2.Pipeline.ExtraIO\bin\Release\Umbrella2.Pipeline.ExtraIO.dll</HintPath>
     </Reference>
     <Reference Include="Umbrella2.SharedBase">
       <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.SharedBase.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Pipeline.EIOAlgorithms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Pipeline.EIOAlgorithms\bin\Debug\Umbrella2.Pipeline.EIOAlgorithms.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

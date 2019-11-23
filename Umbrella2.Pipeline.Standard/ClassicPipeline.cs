@@ -50,6 +50,8 @@ namespace Umbrella2.Pipeline.Standard
 			bool HasBadpix = Args.Badpixel != null;
 
 			Logger("Begining to run the pipeline");
+			var zpTask = System.Threading.Tasks.Task<Dictionary<IO.Image, double>>.Factory.StartNew(() => CalibrateZP(Args.Inputs));
+			var skTask = System.Threading.Tasks.Task<bool>.Factory.StartNew(() => PrecacheSkyBot(Args.Inputs));
 
 			BitArray[] map = PipelineHelperFunctions.ExtractBadpixel(Args.Badpixel, Logger);
 
@@ -205,9 +207,15 @@ namespace Umbrella2.Pipeline.Standard
 
 			sp.LogDetections(Path.Combine(RunDir, "detlog.txt"));
 
-			var Recovered = RecoverTracklets(TK2List, Args.Inputs, Path.Combine(RunDir, "reclog.txt"));
+			Dictionary<IO.Image, double> ZP = zpTask.Result;
+			skTask.Wait();
+
+			var Recovered = RecoverTracklets(TK2List, Args.Inputs, Path.Combine(RunDir, "reclog.txt"), ZP);
+			TrackletsDeduplication.Deduplicate(Recovered, 1.0);
 
 			Logger("Recovered " + Recovered.Count + " candidate objects");
+
+			PairSkyBot(Recovered, SkyBoTDistance, Args.FieldName, Args.CCDNumber, Args.Inputs);
 
 			return Recovered;
 		}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using Umbrella2.Pipeline.Standard;
 
 namespace Umbrella2.Pipeline.ViaNearby
 {
@@ -26,17 +27,17 @@ namespace Umbrella2.Pipeline.ViaNearby
 			return Config;
 		}
 
-		public static void ApplyConfiguration(StandardPipeline Pipeline, Dictionary<string, string> Config)
+		public static void ApplyConfiguration(ClassicPipeline Pipeline, Dictionary<string, string> Config)
 		{
-			Pipeline.CorrectSWARP = Config.ToBool(nameof(StandardPipeline.CorrectSWARP));
-			Pipeline.DotDetectorThreshold = Config.ToThreshold(nameof(StandardPipeline.DotDetectorThreshold));
-			Pipeline.ExtraMaskRadius = Config.ToDouble(nameof(StandardPipeline.ExtraMaskRadius));
-			Pipeline.MaskRadiusMultiplier = Config.ToDouble(nameof(StandardPipeline.MaskRadiusMultiplier));
-			Pipeline.MaskThreshold = Config.ToThreshold(nameof(StandardPipeline.MaskThreshold));
-			Pipeline.NormalizationMeshSize = Config.ToInt(nameof(StandardPipeline.NormalizationMeshSize));
-			Pipeline.PoissonRadius = Config.ToInt(nameof(StandardPipeline.PoissonRadius));
-			Pipeline.SecMedRadius = Config.ToInt(nameof(StandardPipeline.SecMedRadius));
-			Pipeline.StandardBITPIX = Config.ToInt(nameof(StandardPipeline.StandardBITPIX));
+			Pipeline.CorrectSWARP = Config.ToBool(nameof(ClassicPipeline.CorrectSWARP));
+			Pipeline.DotDetectorThreshold = Config.ToThreshold(nameof(ClassicPipeline.DotDetectorThreshold));
+			Pipeline.ExtraMaskRadius = Config.ToDouble(nameof(ClassicPipeline.ExtraMaskRadius));
+			Pipeline.MaskRadiusMultiplier = Config.ToDouble(nameof(ClassicPipeline.MaskRadiusMultiplier));
+			Pipeline.MaskThreshold = Config.ToThreshold(nameof(ClassicPipeline.MaskThreshold));
+			Pipeline.NormalizationMeshSize = Config.ToInt(nameof(ClassicPipeline.NormalizationMeshSize));
+			Pipeline.PoissonRadius = Config.ToInt(nameof(ClassicPipeline.PoissonRadius));
+			Pipeline.SecMedRadius = Config.ToInt(nameof(ClassicPipeline.SecMedRadius));
+			Pipeline.StandardBITPIX = Config.ToInt(nameof(ClassicPipeline.StandardBITPIX));
 		}
 
 		public static FrontendConfig ReadConfig(Dictionary<string, string> Config, FrontendConfig FConfig)
@@ -85,15 +86,5 @@ namespace Umbrella2.Pipeline.ViaNearby
 			if (Values.Length != 2) throw new FormatException("Threshold field expected, however not enough values found");
 			return new Threshold() { High = double.Parse(Values[0]), Low = double.Parse(Values[1]) };
 		}
-	}
-
-	public class Threshold
-	{
-		[Description("Lower threshold")]
-		public double Low { get; set; }
-		[Description("Higher threshold")]
-		public double High { get; set; }
-
-		public override string ToString() => High + "; " + Low;
 	}
 }

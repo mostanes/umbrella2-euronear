@@ -229,7 +229,9 @@ namespace Umbrella2.Pipeline.ViaNearby
 						Inputs = fims,
 						CatalogData = CatFiles[i].Select(File.ReadLines).ToArray(),
 						Clipped = false,
-						CCDBadzone = bzf
+						CCDBadzone = bzf,
+						FieldName = textBox1.Text,
+						CCDNumber = CCDNum
 					};
 
 					Pipeline.Logger = (x) => InvokeLogLine("Pipeline", x, CCDStr);
