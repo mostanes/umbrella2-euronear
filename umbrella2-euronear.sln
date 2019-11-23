@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbrella2.Pipeline.ViaNearb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbrella2.Pipeline.Standard", "Umbrella2.Pipeline.Standard\Umbrella2.Pipeline.Standard.csproj", "{1CF49A10-B864-4DFF-88F3-4F040CD31615}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webrella.ClientInterface", "Webrella.ClientInterface\Webrella.ClientInterface.csproj", "{C4DB9EED-4CA4-4D58-AA5D-D7DD88A308AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetstackTester", "NetstackTester\NetstackTester.csproj", "{AC5999FB-4B52-4B82-B5B4-FC4F2227D0AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{1CF49A10-B864-4DFF-88F3-4F040CD31615}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CF49A10-B864-4DFF-88F3-4F040CD31615}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CF49A10-B864-4DFF-88F3-4F040CD31615}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4DB9EED-4CA4-4D58-AA5D-D7DD88A308AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4DB9EED-4CA4-4D58-AA5D-D7DD88A308AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4DB9EED-4CA4-4D58-AA5D-D7DD88A308AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4DB9EED-4CA4-4D58-AA5D-D7DD88A308AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC5999FB-4B52-4B82-B5B4-FC4F2227D0AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5999FB-4B52-4B82-B5B4-FC4F2227D0AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC5999FB-4B52-4B82-B5B4-FC4F2227D0AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5999FB-4B52-4B82-B5B4-FC4F2227D0AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
