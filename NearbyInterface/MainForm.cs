@@ -309,7 +309,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 		bool TrySEValidateInputPath(string TPath)
 		{
-			string FTPath = Path.Combine(TPath, "resampleRow");
+			string FTPath = Path.Combine(TPath, "resamp");
 			if (!Directory.Exists(FTPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return false; }
 			if (!TryValidateInputPath(FTPath)) { textBox2.BackColor = System.Drawing.Color.Yellow; button1.Enabled = false; return false; }
 			textBox2.BackColor = System.Drawing.Color.LightGreen;
@@ -317,7 +317,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 			try
 			{
-				string SPath = Path.Combine(TPath, "sextractorCat");
+				string SPath = Path.Combine(TPath, "sextractor_cat");
 				List<string> Catpaths = Directory.EnumerateFiles(SPath).ToList();
 				CatFiles = new List<string>[InputFiles.Length];
 				for (int i = 0; i < InputFiles.Length; i++)

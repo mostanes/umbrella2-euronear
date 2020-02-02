@@ -47,9 +47,6 @@
     <Reference Include="Umbrella2.SharedBase">
       <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.SharedBase.dll</HintPath>
     </Reference>
-    <Reference Include="Umbrella2.Visualizer.Winforms">
-      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Release\Umbrella2.Visualizer.Winforms.dll</HintPath>
-    </Reference>
     <Reference Include="Umbrella2.Algorithms">
       <HintPath>..\..\Umbrella2\Umbrella2.Algorithms.Images\bin\Release\Umbrella2.Algorithms.dll</HintPath>
     </Reference>
@@ -61,6 +58,9 @@
     </Reference>
     <Reference Include="Umbrella2.Pipeline.ExtraIO">
       <HintPath>..\..\Umbrella2\Umbrella2.Pipeline.ExtraIO\bin\Release\Umbrella2.Pipeline.ExtraIO.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbrella2.Visualizer.Winforms">
+      <HintPath>..\..\Umbrella2\Umbrella2.Visualizer.Winforms\bin\Debug\Umbrella2.Visualizer.Winforms.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

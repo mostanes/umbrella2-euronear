@@ -18,16 +18,15 @@ namespace Umbrella2.Pipeline.Standard
 	{
 		public Action<string> Logger;
 
-		void Log(bool Generated, string Name, int Number)
+		void LogImage(bool Generated, string Name, int Number)
 		{
 			if (Generated) Logger("Generated " + Name + " image " + Number);
 			else Logger("Found " + Name + " image " + Number);
 		}
 
-		void LogDet(string Detector, int DetNum)
-		{
-			Logger("Found " + DetNum + " detections using " + Detector + " detector");
-		}
+		void LogDet(string Detector, int DetNum) => Logger("Found " + DetNum + " detections using " + Detector + " detector");
+
+		void LogMessage(string Source, string Message) => Logger("[" + Source + "]: " + Message);
 
 		public List<Tracklet> AnalyzeCCD(PipelineArguments Args)
 		{
@@ -43,8 +42,8 @@ namespace Umbrella2.Pipeline.Standard
 			FitsImage[] FirstProcess = new FitsImage[ImageCount];
 			double[] PFW = PipelineHelperFunctions.LinearizedPoissonKernel(PoissonRadius);
 
-			Step.StepPipeline sp = new Step.StepPipeline(StandardBITPIX, RunDir, Args.Inputs.Length);
-			sp.LogHookImage = Log;
+			Step.StepPipeline sp = new Step.StepPipeline(StandardBITPIX, RunDir, Args.Inputs.Length, MaxDetections);
+			sp.LogHookImage = LogImage;
 			sp.LogHookDetection = LogDet;
 
 			bool HasBadpix = Args.Badpixel != null;

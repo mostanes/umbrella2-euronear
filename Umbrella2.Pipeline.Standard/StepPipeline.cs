@@ -16,6 +16,7 @@ namespace Umbrella2.Pipeline.Step
 		int StandardBitpix;
 		string RunDir;
 		FICHV[] Headers;
+		int MaxDetections;
 
 		List<EquatorialPoint> AllDetectionCenters;
 		List<ImageDetection> AllDetections;
@@ -23,6 +24,7 @@ namespace Umbrella2.Pipeline.Step
 
 		public Action<bool, string, int> LogHookImage;
 		public Action<string, int> LogHookDetection;
+		public Action<string, string> LogMessage;
 
 		public void SetModel(int Number, FitsImage Model, List<ImageProperties> ExtraProperties)
 		{
@@ -33,10 +35,11 @@ namespace Umbrella2.Pipeline.Step
 					Headers[Number].Header.Add(mr.Name, mr);
 		}
 
-		public StepPipeline(int StandardBitPix, string RunDir, int NoImages)
+		public StepPipeline(int StandardBitPix, string RunDir, int NoImages, int MaxDetections)
 		{
 			StandardBitpix = StandardBitPix;
 			this.RunDir = RunDir;
+			this.MaxDetections = MaxDetections;
 			Headers = new FICHV[NoImages];
 			AllDetectionCenters = new List<EquatorialPoint>();
 			AllDetections = new List<ImageDetection>();
@@ -88,6 +91,11 @@ namespace Umbrella2.Pipeline.Step
 		public List<ImageDetection> RunDetector(Func<FitsImage,List<ImageDetection>> Detector, FitsImage Image, string DetectorName, DetectionAlgorithm Algo)
 		{
 			var Detections = Detector(Image);
+			if(Detections.Count > MaxDetections)
+			{
+				LogMessage(DetectorName, "Too many detections. Check detector settings.");
+				return new List<ImageDetection>();
+			}
 			foreach (var d in Detections)
 				if (d.TryFetchProperty(out PairingProperties pp))
 					pp.Algorithm = Algo;

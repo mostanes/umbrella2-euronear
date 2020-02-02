@@ -88,8 +88,9 @@ namespace Umbrella2.Pipeline.Standard
 
 		private bool PrecacheSkyBot(FitsImage[] Images)
 		{
+			Logger("Preloading SkyBoT information");
 			foreach (FitsImage img in Images)
-				img.GetProperty<SkyBotImageData>();
+				img.GetProperty<SkyBotImageData>().RetrieveObjects(ObservatoryCode);
 			return true;
 		}
 
@@ -98,7 +99,7 @@ namespace Umbrella2.Pipeline.Standard
 			foreach (Image img in ImageSet)
 			{
 				SkyBotImageData skid = img.GetProperty<SkyBotImageData>();
-				skid.RetrieveObjects(ObservatoryCode);
+				//skid.RetrieveObjects(ObservatoryCode);
 
 				foreach (Tracklet tk in Tracklets)
 					skid.TryPair(tk, ArcLengthSec);
@@ -108,7 +109,13 @@ namespace Umbrella2.Pipeline.Standard
 				{
 					Logger("SkyBoT: Unpaired objects left: ");
 					foreach (var o in unp)
-						Logger("SkyBoT: " + ExtraIO.EquatorialPointStringFormatter.FormatToString(o, ExtraIO.EquatorialPointStringFormatter.Format.MPC));
+					{
+						string SkData = "SkyBoT: " + ExtraIO.EquatorialPointStringFormatter.FormatToString(o, ExtraIO.EquatorialPointStringFormatter.Format.MPC);
+						PixelPoint pp = img.Transform.GetPixelPoint(o);
+						SkData += ";" + pp.ToString();
+						Logger(SkData);
+					}
+
 				}
 			}
 

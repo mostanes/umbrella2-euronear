@@ -103,6 +103,11 @@ namespace Umbrella2.Pipeline.Standard
 		[DisplayName("Standard BITPIX")]
 		public int StandardBITPIX { get; set; } = -32;
 
+		[Description("Maximum number of detections allowed for each algorithm. If a detection algorithm reports more, they are ignored.")]
+		[Category("General pipeline properties")]
+		[DisplayName("Maximum algorithm detections")]
+		public int MaxDetections { get; set; } = 1000;
+
 		[Description("Radius of the Restricted Mean Shot noise removal filter. Value in pixels.")]
 		[Category("Core")]
 		[DisplayName("Shot noise radius")]
