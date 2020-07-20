@@ -94,7 +94,7 @@ namespace Umbrella2.Pipeline.Standard
 			return true;
 		}
 
-		private void PairSkyBot(List<Tracklet> Tracklets, double ArcLengthSec, string ReportFieldName, int CCDNumber, FitsImage[] ImageSet)
+		private void PairSkyBot(List<Tracklet> Tracklets, double ArcLengthSec, string ReportFieldName, int CCDNumber, FitsImage[] ImageSet, Step.StepPipeline Pipeline)
 		{
 			foreach (Image img in ImageSet)
 			{
@@ -114,6 +114,11 @@ namespace Umbrella2.Pipeline.Standard
 						PixelPoint pp = img.Transform.GetPixelPoint(o);
 						SkData += ";" + pp.ToString();
 						Logger(SkData);
+						var Reasons = Pipeline.QueryWhyNot(o, 5);
+						string LRs = "Reasons: ";
+						foreach (string x in Reasons) LRs += x + ";";
+						if (Reasons.Count == 0) Logger("Not found in removal log, so not detected.");
+						else Logger(LRs);
 					}
 
 				}

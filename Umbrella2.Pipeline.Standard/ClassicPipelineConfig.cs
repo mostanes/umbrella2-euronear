@@ -202,8 +202,13 @@ namespace Umbrella2.Pipeline.Standard
 
 		[Description("Extra distance to add to the search radius when looking for detections. Value in arcseconds.")]
 		[Category("Pairing")]
-		[DisplayName("Extra search radius")]
-		public double ExtraSearchRadius { get; set; } = 3.5;
+		[DisplayName("Small extra search radius")]
+		public double SmallExtraSearchRadius { get; set; } = 1.0;
+
+		[Description("Extra distance to add to the search radius if no detections are found within the small radius. Value in arcseconds.")]
+		[Category("Pairing")]
+		[DisplayName("Big extra search radius")]
+		public double BigExtraSearchRadius { get; set; } = 3.5;
 
 		[Description("Selects which operations are run on the input images.")]
 		[Category("Core")]

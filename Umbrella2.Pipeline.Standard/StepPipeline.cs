@@ -162,7 +162,12 @@ namespace Umbrella2.Pipeline.Step
 		{
 			foreach (ImageDetection imd in Input)
 				if (!Result.Any((x) => x.Detections.Contains(imd)))
-					RemovalPoints.Add(imd.Barycenter.EP, "Pairing");
+				{
+					if (!RemovalPoints.ContainsKey(imd.Barycenter.EP))
+						RemovalPoints.Add(imd.Barycenter.EP, "Pairing");
+					else RemovalPoints[imd.Barycenter.EP] = "Paring; multiple tracklets";
+				}
+					
 		}
 
 		public List<string> QueryWhyNot(string RA_Dec, double ArcSecLook)
@@ -175,6 +180,30 @@ namespace Umbrella2.Pipeline.Step
 				if ((kvp.Key ^ eqp) < ArcSecLook)
 					r.Add(kvp.Value);
 			}
+			if (r.Count == 0)
+				foreach (var d in AllDetections)
+				{
+					if ((d.Barycenter ^ eqp) < ArcSecLook)
+						r.Add("Post-filtering (recovery)");
+				}
+			return r;
+		}
+
+		public List<string> QueryWhyNot(EquatorialPoint Point, double ArcSecLook)
+		{
+			ArcSecLook *= Math.PI / 180 / 3600;
+			List<string> r = new List<string>();
+			foreach (var kvp in RemovalPoints)
+			{
+				if ((kvp.Key ^ Point) < ArcSecLook)
+					r.Add(kvp.Value);
+			}
+			if (r.Count == 0)
+				foreach (var d in AllDetections)
+				{
+					if ((d.Barycenter ^ Point) < ArcSecLook)
+						r.Add("Post-filtering (recovery)");
+				}
 			return r;
 		}
 

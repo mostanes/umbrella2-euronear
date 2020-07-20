@@ -45,6 +45,7 @@ namespace Umbrella2.Pipeline.Standard
 			Step.StepPipeline sp = new Step.StepPipeline(StandardBITPIX, RunDir, Args.Inputs.Length, MaxDetections);
 			sp.LogHookImage = LogImage;
 			sp.LogHookDetection = LogDet;
+			sp.LogMessage = LogMessage;
 
 			bool HasBadpix = Args.Badpixel != null;
 
@@ -188,7 +189,7 @@ namespace Umbrella2.Pipeline.Standard
 			PrePair.MatchDetections(FilteredDetections, MaxPairmatchDistance, MixMatch, SameArcSep);
 
 			Logger("Left with " + FilteredDetections.Count + " detections");
-			LinePoolSimple lps = new LinePoolSimple() { MaxLinErrorArcSec = MaxResidual, SearchExtra = ExtraSearchRadius };
+			LinePoolSimple lps = new LinePoolSimple() { MaxLinErrorArcSec = MaxResidual, SearchExtraSmall = SmallExtraSearchRadius, SearchExtraBig = BigExtraSearchRadius };
 			lps.LoadDetections(FilteredDetections);
 
 			lps.GeneratePool();
@@ -214,7 +215,7 @@ namespace Umbrella2.Pipeline.Standard
 
 			Logger("Recovered " + Recovered.Count + " candidate objects");
 
-			PairSkyBot(Recovered, SkyBoTDistance, Args.FieldName, Args.CCDNumber, Args.Inputs);
+			PairSkyBot(Recovered, SkyBoTDistance, Args.FieldName, Args.CCDNumber, Args.Inputs, sp);
 
 			return Recovered;
 		}

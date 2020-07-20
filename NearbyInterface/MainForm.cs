@@ -17,9 +17,9 @@ namespace Umbrella2.Pipeline.ViaNearby
 		const string ConfigFile = "config.txt";
 		Umbrella2.Pipeline.Standard.ClassicPipeline Pipeline;
 		List<string>[] InputFiles;
-		string[] MainCat;
 		List<string>[] CatFiles;
 		Dictionary<int, BadzoneFilter> Badzones;
+		TrackletOutput TKO;
 
 		public MainForm()
 		{
@@ -28,12 +28,13 @@ namespace Umbrella2.Pipeline.ViaNearby
 
 		private void textBox1_Validating(object sender, CancelEventArgs e)
 		{
-			if (textBox1.Text.Length != 4) return;
+			if (textBox1.Text.Length != 4) goto skip;
 			if (textBox1.Text[0] == 'e') textBox1.Text = "E" + textBox1.Text.Substring(1);
-			if (textBox1.Text[0] != 'E') return;
+			if (textBox1.Text[0] != 'E') goto skip;
 			label2.Text = "Night: " + textBox1.Text[1];
 			label3.Text = "Field number: " + textBox1.Text.Substring(2);
 			textBox1.BackColor = System.Drawing.Color.LightGreen;
+		skip:
 			textBox2.Text = Path.Combine(Config.RootInputDir, textBox1.Text);
 			textBox3.Text = Path.Combine(Config.RootOutputDir, textBox1.Text);
 		}
@@ -76,6 +77,19 @@ namespace Umbrella2.Pipeline.ViaNearby
 				Plugins.LoadableTypes.RegisterNewTypes(asm.GetTypes());
 			LogLine("Core", "Plugins loaded");
 			LogLine("Core", "Initialized");
+
+			if (Program.Args.Length != 0)
+			{
+				LogLine("Automation", "Arguments specified on the command line.");
+				if (Program.Args[0] == "autofield")
+				{
+					LogLine("Automation", "Automatically running field " + Program.Args[1]);
+					textBox1.Text = Program.Args[1];
+					textBox1_Validating(null, null);
+					textBox2_Validating(null, null);
+					button1_Click(null, null);
+				}
+			}
 		}
 
 		bool TryLoadLast()
@@ -227,7 +241,7 @@ namespace Umbrella2.Pipeline.ViaNearby
 						Badpixel = CBP,
 						RunDir = Path.Combine(textBox3.Text, CCDStr),
 						Inputs = fims,
-						CatalogData = CatFiles[i].Select(File.ReadLines).ToArray(),
+						CatalogData = CatFiles?[i]?.Select(File.ReadLines)?.ToArray(),
 						Clipped = false,
 						CCDBadzone = bzf,
 						FieldName = textBox1.Text,
@@ -254,16 +268,17 @@ namespace Umbrella2.Pipeline.ViaNearby
 		void ShowResults(List<Tracklet> Tracklets, int i, IList<FitsImage> Images, string FieldName)
 		{
 			int CCDNum = i + 1;
-			TrackletOutput TKO = new TrackletOutput("Umbrella " + FieldName + ", CCD " + CCDNum.ToString());
-			TKO.ImageSet = (IList<IO.Image>)Images;
-			TKO.Tracklets = Tracklets;
-			TKO.ReportName = Path.Combine(textBox2.Text, "mpc3report.txt");
-			TKO.ObservatoryCode = "950";
-			TKO.Band = ExtraIO.MPCOpticalReportFormat.MagnitudeBand.R;
-			TKO.CCDNumber = CCDNum;
-			TKO.FieldName = FieldName;
-			TKO.ReportFieldName = FieldName.Substring(0, 2) + FieldName.Substring(FieldName.Length - 2, 2);
-			TKO.Show();
+			if (TKO == null)
+			{
+				TKO = new TrackletOutput(FieldName);
+				TKO.ReportName = Path.Combine(textBox2.Text, "mpc3report.txt");
+				TKO.ObservatoryCode = "950";
+				TKO.Band = ExtraIO.MPCOpticalReportFormat.MagnitudeBand.R;
+				TKO.FieldName = FieldName;
+				TKO.ReportFieldName = FieldName.Substring(0, 2) + FieldName.Substring(FieldName.Length - 2, 2);
+				TKO.Show();
+			}
+			TKO.AddCCD(CCDNum, Tracklets, (IList<IO.Image>)Images);
 		}
 
 		private void textBox2_Validating(object sender, CancelEventArgs e)
